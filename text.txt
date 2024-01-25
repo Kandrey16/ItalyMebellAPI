@@ -1,0 +1,371 @@
+const sequelize = require('../db')
+const { DataTypes, DATE} = require('sequelize')
+
+const user_profile = sequelize.define('user_profile', {
+    email_user: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true,
+        }},
+
+    password_user: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            len: {
+                args: [5, 255], // Указываете минимальное и максимальное значение
+                msg: 'Пароль должен быть не менее 5 символов',
+            },
+            is: [0-9],
+            is: ["a-zA-Zа-яА-Я"]
+        }},
+    first_name_user: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        },
+    second_name_user: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    image_user_profile: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
+    },
+})
+
+const attribute_group = sequelize.define('attribute_group', {
+    id_attribute_group: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    name_attribute_group: {
+    type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+})
+
+const attribute = sequelize.define('attribute', {
+    id_attribute: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    name_attribute: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+})
+
+const product = sequelize.define('product', {
+    id_product: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    article_product: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+        unique: true,
+    },
+
+    name_product: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+
+    price_product: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+    },
+    description_product: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        defaultValue: null,
+    },
+    count_product: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    is_enabled: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
+})
+
+const specification = sequelize.define('specification', {
+    id_specification: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    value_specification: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+})
+
+const product_image = sequelize.define('product_image', {
+    id_product_image: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    url_image: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
+    },
+})
+
+const roles = sequelize.define('roles', {
+    id_roles: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    name_roles: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+})
+
+const client = sequelize.define('client', {
+    email_client: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+        allowNull: false,
+    },
+
+    phone_number_client: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isPhoneNumber(value) {
+                const phoneMask = /^\+7\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/;
+                if(!phoneMask.test(value)) {
+                    throw new Error('Некорректный формат номера телефона')
+                }
+            }
+        }
+    },
+})
+
+const admin = sequelize.define('admin', {
+    email_admin: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+        allowNull: false,
+    },
+})
+
+const product_comment = sequelize.define('product_comment', {
+    id_product_comment: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    mark_comment: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+            min: 1,
+            max: 5,
+        }
+    },
+
+    description_comment: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+
+})
+
+const image_comment = sequelize.define('image_comment', {
+    id_image_comment: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    url_image_comment: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null,
+    },
+})
+
+const order_address = sequelize.define('order_address', {
+    id_order_address: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    address_order: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
+
+    entrance_order: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+        validate: {
+            min: 0
+        }
+    },
+
+    floor_order: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+        validate: {
+            min: 0
+        }
+    },
+
+    home_code_order: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+    },
+})
+
+const orders = sequelize.define('orders', {
+    id_order: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    number_order: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
+    },
+
+    price_order: {
+        type: DataTypes.DECIMAL(18,2),
+        allowNull: false,
+    },
+
+    date_order: {
+        type: DataTypes.DATE(),
+        allowNull: true,
+        defaultValue: DATE,
+    },
+})
+
+const order_product = sequelize.define('order_product', {
+    id_order_product: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true,
+    },
+
+    count_order_product: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+})
+
+//attribute
+attribute_group.hasMany(attribute, { foreignKey: 'id_attribute_group' });
+attribute.belongsTo(attribute_group, { foreignKey: 'id_attribute_group' });
+
+//product_image
+product.hasMany(product_image, { foreignKey: 'id_product' });
+product_image.belongsTo(product, { foreignKey: 'id_product' });
+
+//image_comment
+//поправил
+product_comment.hasMany(image_comment, { foreignKey: 'id_product_comment' });
+image_comment.belongsTo(product_comment, { foreignKey: 'id_product_comment' });
+
+
+//user_profile
+//client
+user_profile.hasOne(client, { foreignKey: 'email_client', as: 'client' });
+client.belongsTo(user_profile, { foreignKey: 'email_client', as: 'user_profile' });
+//admin
+user_profile.hasOne(admin, { foreignKey: 'email_admin', as: 'admin' });
+admin.belongsTo(user_profile, { foreignKey: 'email_admin', as: 'user_profile' });
+
+//roles
+roles.hasMany(admin, { foreignKey: 'id_role' });
+admin.belongsTo(roles, { foreignKey: 'id_role' });
+
+//specification
+//attribute
+specification.belongsTo(attribute, { foreignKey: 'id_attribute', as: 'attribute' });
+attribute.hasMany(specification, { foreignKey: 'id_attribute', as: 'specifications' });
+//product
+specification.belongsTo(product, { foreignKey: 'id_product', as: 'product' });
+product.hasMany(specification, { foreignKey: 'id_product', as: 'specifications' });
+
+//order_address
+client.hasMany(order_address, { foreignKey: 'email_client', as: 'client' });
+order_address.belongsTo(client, { foreignKey: 'email_client', as: 'client' });
+
+//order
+order_address.hasMany(orders, { foreignKey: 'id_order_address' });
+orders.belongsTo(order_address, { foreignKey: 'id_order_address' });
+
+order_product.belongsTo(orders, { foreignKey: 'id_order', as: 'order' });
+orders.hasMany(order_product, { foreignKey: 'id_order', as: 'order_product' });
+
+order_product.belongsTo(product, { foreignKey: 'id_product', as: 'product' });
+product.hasMany(order_product, { foreignKey: 'id_product', as: 'order_product' });
+
+product_comment.belongsTo(product, { foreignKey: 'id_product' });
+product.hasMany(product_comment, { foreignKey: 'id_product' });
+
+product_comment.belongsTo(client, { foreignKey: 'email_client', as: 'client' });
+client.hasMany(product_comment, { foreignKey: 'email_client', as: 'product_comment' });
+
+module.exports = {
+    user_profile,
+    attribute_group,
+    attribute,
+    product,
+    specification,
+    product_image,
+    roles,
+    client,
+    admin,
+    product_comment,
+    image_comment,
+    order_address,
+    orders,
+    order_product
+}

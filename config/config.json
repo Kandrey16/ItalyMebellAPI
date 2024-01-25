@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "root",
+    "database": "MebellDatabase",
+    "host": "localhost",
+    "dialect": "postgresql"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "root",
+    "database": "MebellDatabase",
+    "host": "localhost",
+    "dialect": "postgresql"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "root",
+    "database": "MebellDatabase",
+    "host": "localhost",
+    "dialect": "postgresql"
+  }
+}
