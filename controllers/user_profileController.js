@@ -61,6 +61,7 @@ class User_profileController {
 
     }
 
+
     async check(req, res, next) {
         const token = generateJwt(req.user.email_user, req.user.role_user)
         return res.json({token})

@@ -1,23 +1,22 @@
-const {Product_image} = require("../models");
-const ApiError = require("../error/ApiError");
 const uuid = require('uuid')
 const path = require('path')
+const {Product_image, Product} = require("../models");
+const ApiError = require("../error/ApiError");
 class Product_imageController {
     async create(req, res, next) {
         try {
-            // const {id_product} = req.body
-            // const {url_image} = req.files || {}
-            //
+            const {id_product} = req.body
+            const {url_image} = req.files || {}
+
             // if (!url_image) {
             //     throw ApiError.badRequest("Image file is missing");
             // }
-            //
-            // let filename = uuid.v4() + '.jpg'
-            // await url_image.mv(path.resolve(__dirname, '..', 'static', filename))
 
-            const {url_image, id_product} = req.body
-            const product_image = await Product_image.create({url_image, id_product})
-            return res.json({product_image})
+            let filename = uuid.v4() + '.jpg'
+            await url_image.mv(path.resolve(__dirname, '..', 'static', filename))
+
+            const product_image = await Product_image.create({url_image: filename, id_product})
+            return res.json(product_image)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }

@@ -1,6 +1,7 @@
 //controller.js
 const {Product} = require('../models/index')
 const ApiError = require('../error/ApiError')
+const {Product_image} = require("../models");
 
 class ProductController {
     async create(req, res, next) {
@@ -32,7 +33,7 @@ class ProductController {
             next(ApiError.badRequest(e.message));
         }
     }
-    
+
     async update(req, res, next) {
         try {
             const {id} = req.params
@@ -43,7 +44,7 @@ class ProductController {
                 return next(ApiError.badRequest({message: `Product with id ${id} not found`}))
             }
 
-            await product.update({article_product, name_product, price_product, description_product, count_product})
+            await product.update({article_product, name_product, price_product, description_product, count_product, is_enabled})
             return res.json(product)
         } catch (e) {
             next(ApiError.badRequest(e.message))
