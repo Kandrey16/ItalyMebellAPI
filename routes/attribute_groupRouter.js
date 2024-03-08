@@ -4,10 +4,10 @@ const attributeGroupController = require('../controllers/attribute_groupControll
 const check = require("../middleware/checkRoleMiddleware");
 
 
-router.post('/', check('ADMIN'), attributeGroupController.create);
+router.post('/', attributeGroupController.create);
 router.get('/', attributeGroupController.getAll);
 router.get('/:id', attributeGroupController.getOne);
-router.put('/:id', check('ADMIN'), attributeGroupController.update);
-router.delete('/:id', check('ADMIN'), attributeGroupController.delete);
+router.put('/:id', attributeGroupController.update);
+router.delete('/:id', attributeGroupController.delete);
 
 module.exports = router;
