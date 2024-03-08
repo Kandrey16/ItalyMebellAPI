@@ -5,25 +5,6 @@ const uuid = require("uuid");
 const path = require("path");
 
 class ProductController {
-    /**
-     * @swagger
-     * /product:
-     *   post:
-     *     summary: Create a new product
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: '#/components/schemas/Product'
-     *     responses:
-     *       200:
-     *         description: The created product
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Product'
-     */
     async create(req, res, next) {
         try {
             const {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category} = req.body
@@ -38,45 +19,10 @@ class ProductController {
             next(ApiError.badRequest(e.message))
         }
     }
-    /**
-     * @swagger
-     * /product:
-     *   get:
-     *     summary: Retrieve a list of products
-     *     responses:
-     *       200:
-     *         description: A list of products
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: array
-     *               items:
-     *                 $ref: '#/components/schemas/Product'
-     */
     async getAll(req, res) {
         const products = await Product.findAll()
         return res.json(products)
     }
-    /**
-     * @swagger
-     * /product/{id}:
-     *   get:
-     *     summary: Retrieve a single product
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         description: Numeric ID of the product to retrieve
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: A single product
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Product'
-     */
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
@@ -91,32 +37,6 @@ class ProductController {
             next(ApiError.badRequest(e.message));
         }
     }
-    /**
-     * @swagger
-     * /product/{id}:
-     *   put:
-     *     summary: Update a product
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         description: Numeric ID of the product to update
-     *         schema:
-     *           type: integer
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: '#/components/schemas/Product'
-     *     responses:
-     *       200:
-     *         description: The updated product
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Product'
-     */
     async update(req, res, next) {
         try {
             const {id} = req.params
@@ -141,22 +61,6 @@ class ProductController {
             next(ApiError.badRequest(e.message))
         }
     }
-    /**
-     * @swagger
-     * /product/{id}:
-     *   delete:
-     *     summary: Delete a product
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         description: Numeric ID of the product to delete
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: Product deleted successfully
-     */
     async delete(req, res, next) {
         try {
             const {id} = req.params
