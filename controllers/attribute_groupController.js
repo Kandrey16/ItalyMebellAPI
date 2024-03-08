@@ -13,12 +13,10 @@ class Attribute_groupController {
             next(ApiError.badRequest(e.message))
         }
     }
-
     async getAll(req, res) {
         const attribute_groups = await Attribute_group.findAll()
         return res.json(attribute_groups)
     }
-
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
@@ -33,7 +31,6 @@ class Attribute_groupController {
             next(ApiError.badRequest(e.message));
         }
     }
-
     async update(req, res, next) {
         try {
             const {id} = req.params
@@ -50,7 +47,6 @@ class Attribute_groupController {
             next(ApiError.badRequest(e.message))
         }
     }
-
     async delete(req, res, next) {
         try {
             const {id} = req.params

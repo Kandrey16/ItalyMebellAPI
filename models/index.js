@@ -3,6 +3,7 @@ const { DataTypes, DATE} = require('sequelize')
 
 const Attribute_group = require('./attribute_group_model')
 const Attribute = require('./attribute_model')
+const Category = require('./category_model')
 const Image_comment = require('./image_comment_model')
 const Order_address = require('./order_address_model')
 const Order_product = require('./order_product_model')
@@ -26,7 +27,8 @@ Product_image.belongsTo(Product, { foreignKey: 'id_product' });
 Product_comment.hasMany(Image_comment, { foreignKey: 'id_product_comment' });
 Image_comment.belongsTo(Product_comment, { foreignKey: 'id_product_comment' });
 
-
+Category.hasMany(Product, {foreignKey: 'id_category'});
+Product.belongsTo(Category, {foreignKey: 'id_category'});
 
 //specification
 //attribute
@@ -60,6 +62,7 @@ module.exports = {
     User_profile,
     Attribute_group,
     Attribute,
+    Category,
     Product,
     Specification,
     Product_image,

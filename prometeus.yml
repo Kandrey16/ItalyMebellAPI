@@ -1,0 +1,7 @@
+global:
+  scrape_interval:     15s # интервал сканирования
+
+scrape_configs:
+  - job_name: 'express-app'
+    static_configs:
+      - targets: ['localhost:5000'] # адрес и порт вашего приложения Express.js

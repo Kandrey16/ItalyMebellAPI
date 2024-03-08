@@ -1,6 +1,5 @@
 const {Attribute} = require('../models/index')
 const ApiError = require('../error/ApiError')
-const {Roles} = require("../models");
 
 class AttributeController {
     async create(req, res, next) {
