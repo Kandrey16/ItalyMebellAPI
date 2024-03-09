@@ -3,9 +3,9 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {User_profile} = require('../models/index')
 
-const generateJwt = (id, email_user, role_user) => {
+const generateJwt = (email_user, role_user) => {
     return jwt.sign(
-        {id, email_user, role_user},
+        {email_user, role_user},
         process.env.SECRET_KEY,
         {expiresIn: '24h'}
     )
@@ -58,18 +58,12 @@ class User_profileController {
         } catch (e) {
             return next(ApiError.internal('Ошибка при аудентификации'))
         }
-
     }
 
 
     async check(req, res, next) {
         const token = generateJwt(req.user.email_user, req.user.role_user)
         return res.json({token})
-        // const {id} = req.query
-        // if (!id) {
-        //     return next(ApiError.badRequest('Не задан ID'))
-        // }
-        // res.json(id);
     }
 
     async getAll(req, res) {

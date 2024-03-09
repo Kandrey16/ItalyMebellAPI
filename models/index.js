@@ -3,6 +3,8 @@ const { DataTypes, DATE} = require('sequelize')
 
 const Attribute_group = require('./attribute_group_model')
 const Attribute = require('./attribute_model')
+const Cart = require('./cart_model')
+const Cart_product = require('./cart_product_model')
 const Category = require('./category_model')
 const Image_comment = require('./image_comment_model')
 const Order_address = require('./order_address_model')
@@ -42,6 +44,16 @@ Product.hasMany(Specification, { foreignKey: 'id_product', as: 'specifications' 
 User_profile.hasMany(Order_address, { foreignKey: 'email_user'});
 Order_address.belongsTo(User_profile, { foreignKey: 'email_user'});
 
+//Cart
+User_profile.hasOne(Cart, {foreignKey: 'email_user'});
+Cart.belongsTo(User_profile, {foreignKey: 'email_user'});
+
+Cart_product.belongsTo(Cart, {foreignKey: 'id_cart'});
+Cart.hasMany(Cart_product, {foreignKey: 'id_cart'});
+
+Cart_product.belongsTo(Product, {foreignKey: 'id_product'});
+Product.hasMany(Cart_product, {foreignKey: 'id_product'});
+
 //order
 Order_address.hasMany(Orders, { foreignKey: 'id_order_address' });
 Orders.belongsTo(Order_address, { foreignKey: 'id_order_address' });
@@ -62,6 +74,8 @@ module.exports = {
     User_profile,
     Attribute_group,
     Attribute,
+    Cart,
+    Cart_product,
     Category,
     Product,
     Specification,
