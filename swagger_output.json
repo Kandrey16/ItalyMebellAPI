@@ -444,21 +444,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id_product": {
-                  "example": "any"
-                },
-                "email_user": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
         "responses": {

@@ -10,6 +10,10 @@ class ProductController {
             const {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category} = req.body
             const {url_main_image_product} = req.files || {}
 
+            if (!url_main_image_product) {
+                return next(ApiError.badRequest("Main image file is missing"));
+            }
+
             let filename = uuid.v4() + '.jpg'
             await url_main_image_product.mv(path.resolve(__dirname, '..', 'static', filename))
 

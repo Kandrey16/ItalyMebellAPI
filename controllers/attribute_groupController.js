@@ -6,7 +6,6 @@ class Attribute_groupController {
     async create(req, res, next) {
         try {
             const {name_attribute_group} = req.body
-
             const attribute_group = await Attribute_group.create({name_attribute_group})
             return res.json({attribute_group})
         } catch (e) {
