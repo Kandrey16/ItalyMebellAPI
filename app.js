@@ -1,8 +1,10 @@
-//index.js
+//app.js
 require('dotenv').config()
 const express = require('express')
 
 const swaggerUi = require('swagger-ui-express');
+
+// const csrfMiddleware = require('./middleware/csrfMiddleware'); // Подключаем middleware для CSRF-токена
 
 const sequelize = require('./db')
 const models = require('./models/index.js')
@@ -22,6 +24,9 @@ app.use(cors())
 app.use(express.json())
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(fileUpload({}))
+
+// app.use(csrfMiddleware); // Используем middleware для CSRF-токена
+
 app.use('/api', router)
 app.use(errorHandler)
 app.use(metricsMiddleWare)
