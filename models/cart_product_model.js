@@ -8,6 +8,11 @@ const Cart_product = sequelize.define('cart_product', {
         allowNull: false,
         autoIncrement: true,
     },
+    count_cart_product: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    }
 })
 
 module.exports = Cart_product;

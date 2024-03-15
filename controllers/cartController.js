@@ -24,25 +24,20 @@ class CartController {
             if (!cart) {
                 return res.status(400).json({ message: 'Cart does not exist for this user' })
             }
-            await Cart_product.create({ id_cart: cart.id_cart, id_product })
-            return res.json({Cart_product})
-            // return res.json({ message: 'Product added to cart successfully' })
+            let cartProduct = await Cart_product.findOne({ where: { id_cart: cart.id_cart, id_product } })
+            if (cartProduct) {
+                cartProduct.count_cart_product += 1
+                await cartProduct.save()
+            } else {
+                cartProduct = await Cart_product.create({ id_cart: cart.id_cart, id_product, count_cart_product: 1 })
+            }
+            return res.json({cartProduct})
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
 
-    // async removeFromCart(req, res, next) {
-    //     try {
-    //         const { id_product, email_user } = req.body
-    //         const cart = await Cart.findOne({ where: { email_user } })
-    //         await Cart_product.destroy({ where: { id_cart: cart.id_cart, id_product } })
-    //         return res.json({ message: 'Product removed from cart successfully', success: true })
-    //         // return res.json({ message: 'Product removed from cart successfully', success: true }) // Добавлено поле success
-    //     } catch (e) {
-    //         next(ApiError.badRequest(e.message))
-    //     }
-    // }
+
     async removeFromCart(req, res, next) {
         try {
             const {id} = req.params
