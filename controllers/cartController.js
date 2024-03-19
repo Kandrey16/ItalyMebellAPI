@@ -1,6 +1,5 @@
 const {  Cart, Cart_product, Product} = require('../models/index')
 const ApiError = require('../error/ApiError')
-const {Attribute_group} = require("../models");
 
 class CartController {
 
@@ -37,6 +36,22 @@ class CartController {
         }
     }
 
+    async updateCartItem(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { count_cart_product } = req.body; // Предполагается, что вы хотите обновить только количество товаров в корзине
+            const cartProduct = await Cart_product.findByPk(id);
+
+            if (!cartProduct) {
+                return next(ApiError.badRequest({ message: `Cart Product with id ${id} not found` }));
+            }
+
+            await cartProduct.update({ count_cart_product }); // Обновляем только количество товаров в корзине
+            return res.json(cartProduct);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
 
     async removeFromCart(req, res, next) {
         try {
