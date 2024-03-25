@@ -1,4 +1,4 @@
-const {Order_address} = require("../models");
+const {Order_address} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class Order_addressController {

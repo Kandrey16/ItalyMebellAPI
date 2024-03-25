@@ -5,6 +5,7 @@ const productController = require('../controllers/productController')
 const check = require("../middleware/checkRoleMiddleware");
 
 router.post('/', productController.create)
+router.get('/search', productController.search)
 router.get('/', productController.getAll)
 router.get('/:id', productController.getOne)
 router.put('/:id', productController.update)

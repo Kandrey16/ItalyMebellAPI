@@ -1,4 +1,4 @@
-const {  Cart, Cart_product, Product} = require('../models/index')
+const {  Cart, Cart_product, Product} = require('../models/association')
 const ApiError = require('../error/ApiError')
 
 class CartController {

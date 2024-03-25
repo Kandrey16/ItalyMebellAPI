@@ -1278,55 +1278,39 @@
     "/product/": {
       "post": {
         "description": "",
-        "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "article_product",
-            "in": "formData",
-            "type": "string",
-            "example": "any"
-          },
-          {
-            "name": "name_product",
-            "in": "formData",
-            "type": "string",
-            "example": "any"
-          },
-          {
-            "name": "price_product",
-            "in": "formData",
-            "type": "number",
-            "example": "any"
-          },
-          {
-            "name": "description_product",
-            "in": "formData",
-            "type": "string",
-            "example": "any"
-          },
-          {
-            "name": "count_product",
-            "in": "formData",
-            "type": "number",
-            "example": "any"
-          },
-          {
-            "name": "is_enabled",
-            "in": "formData",
-            "type": "boolean",
-            "example": "any"
-          },
-          {
-            "name": "id_category",
-            "in": "formData",
-            "type": "string",
-            "example": "any"
-          },
-          {
-            "name": "url_main_image_product",
-            "in": "formData",
-            "type": "file",
-            "description": "The main image of the product"
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "article_product": {
+                  "example": "any"
+                },
+                "name_product": {
+                  "example": "any"
+                },
+                "price_product": {
+                  "example": "any"
+                },
+                "description_product": {
+                  "example": "any"
+                },
+                "count_product": {
+                  "example": "any"
+                },
+                "is_enabled": {
+                  "example": "any"
+                },
+                "id_category": {
+                  "example": "any"
+                },
+                "specifications": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -1350,6 +1334,23 @@
           },
           {
             "name": "page",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/product/search": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "keyword",
             "in": "query",
             "type": "string"
           }
@@ -1627,6 +1628,23 @@
     "/user_profile/": {
       "get": {
         "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"

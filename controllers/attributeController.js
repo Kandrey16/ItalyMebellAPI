@@ -1,4 +1,4 @@
-const {Attribute} = require('../models/index')
+const {Attribute} = require('../models/association')
 const ApiError = require('../error/ApiError')
 
 class AttributeController {

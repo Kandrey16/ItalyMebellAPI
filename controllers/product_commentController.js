@@ -1,4 +1,4 @@
-const {Product_comment} = require("../models");
+const {Product_comment} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class Product_commentController {

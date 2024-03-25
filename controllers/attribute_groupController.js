@@ -1,6 +1,6 @@
-const {Attribute_group} = require('../models/index')
+const {Attribute_group} = require('../models/association')
 const ApiError = require('../error/ApiError')
-const {Product} = require("../models");
+const {Product} = require("../models/association");
 
 class Attribute_groupController {
     async create(req, res, next) {

@@ -1,4 +1,4 @@
-const {Image_comment} = require("../models");
+const {Image_comment} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class Image_commentController {

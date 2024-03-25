@@ -1,6 +1,8 @@
 require('dotenv').config()
 const winston = require('winston')
-const PostgreSQL = require('winston-postgresql').PostgreSQL;
+const PostgresTransport = require('winston-postgres-transport');
+
+let connString = `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
 
 // Уровни логирования
 const levels = {
@@ -25,19 +27,27 @@ const colors = {
     http: 'magenta',
     debug: 'white',
 }
-
 winston.addColors(colors)
 
 const format = winston.format.combine(
     // Добавить метку времени сообщения с предпочтительным форматом
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-    // Сообщить Winston, что логи должны быть цветными
-    winston.format.colorize({ all: true }),
     // Определить формат сообщения, показывающего метку времени, уровень и сообщение
     winston.format.printf(
         (info) => `${info.timestamp} ${info.level}: ${info.message}`,
     ),
 )
+
+const postgresTransport = new PostgresTransport({
+    level: 'info',
+    name: 'Postgres',
+    postgresOptions: {
+        // Is called with (connection, query, params)
+        debug: console.log,
+    },
+    postgresUrl: connString,
+    tableName: 'winston_logs',
+});
 
 const transports = [
     // Отправка сообщений в консоль
@@ -59,27 +69,8 @@ const transports = [
     }),
     // Отправка сообщений в файл all.log
     new winston.transports.File({ filename: 'logs/all.log' }),
+    postgresTransport,
 ]
-
-let connString =
-    `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
-
-let postgresTransport = new PostgreSQL({
-    ssl: false,
-    timestamp: true,
-    connString: connString,
-    tableName: 'logs'
-});
-
-// Обработка ошибок при создании подключения
-postgresTransport.on('error', function(err) {
-    console.error('Ошибка при подключении к базе данных:', err);
-});
-
-// winston.add(postgresTransport);
-
-// Пример использования логирования
-winston.info('Это тестовое сообщение для лога в PostgreSQL');
 
 // Создание логгера
 const logger = winston.createLogger({
@@ -87,14 +78,6 @@ const logger = winston.createLogger({
     levels,
     format,
     transports,
-    postgresTransport,
 })
-
-// try {
-//     throw new Error('This is a simulated error');
-// } catch (error) {
-//     logger.error(error.toString());
-// }
-
 
 module.exports = logger

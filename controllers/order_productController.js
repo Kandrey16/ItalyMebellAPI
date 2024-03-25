@@ -1,4 +1,4 @@
-const {Order_product} = require("../models");
+const {Order_product} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class Order_productController {

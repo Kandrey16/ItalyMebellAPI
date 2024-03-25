@@ -1,6 +1,6 @@
 const uuid = require('uuid')
 const path = require('path')
-const {Product_image, Product} = require("../models");
+const {Product_image, Product} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class Product_imageController {

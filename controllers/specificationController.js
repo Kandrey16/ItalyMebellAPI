@@ -1,4 +1,4 @@
-const {Specification} = require("../models");
+const {Specification} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class SpecificationController {
