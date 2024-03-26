@@ -1,0 +1,23 @@
+name: Node Check Style
+on:
+  push:
+    branches:
+      - version1
+
+jobs:
+  express-check-style:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Git clone repo
+        uses: actions/checkout@v2
+
+      - name: Set versions node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.11.1'
+
+      - name: install dependencies node
+        run:
+          npm --version
+
