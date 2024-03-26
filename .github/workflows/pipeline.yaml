@@ -2,7 +2,7 @@ name: Node Check Style
 on:
   push:
     branches:
-      - version1
+      - version1-1
 
 jobs:
   express-check-style:
@@ -15,9 +15,7 @@ jobs:
       - name: Set versions node
         uses: actions/setup-node@v2
         with:
-          node-version: '20.11.1'
+          node-version: "20.11.1"
 
       - name: install dependencies node
-        run:
-          npm --version
-
+        run: npm --version
