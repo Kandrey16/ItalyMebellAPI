@@ -27,7 +27,7 @@ jobs:
         run: chmod +x ./node_modules/.bin/eslint 
  
       - name: Check code style 
-        run: eslint .\ 
+        run: npm run codestyle 
         env: 
           CI: true
 
