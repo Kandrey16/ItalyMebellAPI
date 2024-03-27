@@ -8,8 +8,7 @@
     "swagger": "node swagger.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "codestyle": "eslint . --fix",
-    "build": "echo 'No build step'"
-
+    "build": "node api/app.js"
   },
   "keywords": [],
   "author": "",
