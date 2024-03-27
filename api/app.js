@@ -1,20 +1,20 @@
 //app.js
 require('dotenv').config()
 const express = require('express')
-const sequelize = require('./db')
-const models = require('./models/association.js')
+const sequelize = require('../db.js')
+const models = require('../models/association.js')
 const cors = require('cors')
 const fileUpload = require('express-fileupload')
 const path = require('path')
-const router = require('./routes/index.js')
+const router = require('../routes/index.js')
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocs = require('./swagger_output.json');
+const swaggerDocs = require('../swagger_output.json');
 
 // const csrfMiddleware = require('./middleware/csrfMiddleware'); // Подключаем middleware для CSRF-токена
-const errorHandler = require('./middleware/ErrorHandlingMiddleware')
-const metricsMiddleWare = require('./middleware/metricsMiddleware')
-const morganMiddleware = require('./middleware/morgan.middleware')
-const logger = require('./utils/logger')
+const errorHandler = require('../middleware/ErrorHandlingMiddleware.js')
+const metricsMiddleWare = require('../middleware/metricsMiddleware.js')
+const morganMiddleware = require('../middleware/morgan.middleware.js')
+const logger = require('../utils/logger.js')
 
 const PORT = process.env.PORT || 5000
 const app = express()
@@ -30,6 +30,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(errorHandler)
 app.use(metricsMiddleWare)
 app.use(morganMiddleware)
+
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
 const start = async () => {
     try {
