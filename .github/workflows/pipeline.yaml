@@ -1,0 +1,32 @@
+name: Node Check Style # Имя workflow, запускается при изменении кода
+on:
+  push:
+    branches:
+      - version1-1 # Workflow активируется на push в ветку version1-1
+
+jobs:
+  express-check-style: # Определяем задачу для проверки стиля кода
+    runs-on: ubuntu-latest # Запускаем задачу на последней версии Ubuntu
+
+    steps:
+      - name: Git clone repo # Шаг для клонирования репозитория
+        uses: actions/checkout@v2 # Используем действие checkout версии 2 для клонирования
+
+      - name: Set versions node # Устанавливаем версию Node.js
+        uses: actions/setup-node@v2 # Используем действие setup-node версии 2
+        with:
+          node-version: "20.11.1" # Задаём конкретную версию Node.js
+
+      - name: check version node # Проверяем версию Node.js
+        run: npm --version # Выполняем команду для вывода версии npm
+
+      - name: Install dependencies # Устанавливаем зависимости
+        run: npm install # Выполняем команду npm для установки зависимостей проекта
+
+      - name: Set permissions for ESLint # Выставляем права для запуска ESLint
+        run: chmod +x ./node_modules/.bin/eslint # Меняем права на исполняемый файл ESLint
+
+      - name: Check code style # Проверяем стиль кода
+        run: npm run codestyle # Запускаем скрипт codestyle, определённый в package.json
+        env:
+          CI: true # Устанавливаем переменную окружения CI в true
