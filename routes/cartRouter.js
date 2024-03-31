@@ -8,6 +8,6 @@ router.post('/create', cartController.createCart)
 router.post('/', checkAuth, cartController.addToCart)
 router.put('/:id', checkAuth, cartController.updateCartItem)
 router.delete('/:id', checkAuth, cartController.removeFromCart)
-router.get('/:email_user', checkAuth, cartController.getCart)
+router.get('/:email_user', cartController.getCart)
 
 module.exports = router

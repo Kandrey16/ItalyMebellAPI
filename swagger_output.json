@@ -172,19 +172,11 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       },
@@ -559,19 +551,11 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       }
@@ -904,7 +888,7 @@
                 "id_order": {
                   "example": "any"
                 },
-                "id_product": {
+                "id_cart_product": {
                   "example": "any"
                 }
               }
@@ -964,7 +948,7 @@
                 "id_order": {
                   "example": "any"
                 },
-                "id_product": {
+                "id_cart_product": {
                   "example": "any"
                 }
               }
@@ -1004,16 +988,13 @@
             "schema": {
               "type": "object",
               "properties": {
-                "number_order": {
+                "order": {
                   "example": "any"
                 },
-                "price_order": {
+                "address": {
                   "example": "any"
                 },
-                "date_order": {
-                  "example": "any"
-                },
-                "id_order_address": {
+                "products": {
                   "example": "any"
                 }
               }

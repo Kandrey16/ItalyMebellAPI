@@ -5,8 +5,8 @@ class Order_productController {
     async create(req, res, next) {
         try {
 
-            const {count_order_product, id_order, id_product} = req.body
-            const order_product = await Order_product.create({count_order_product, id_order, id_product})
+            const {count_order_product, id_order, id_cart_product} = req.body
+            const order_product = await Order_product.create({count_order_product, id_order, id_cart_product})
             return res.json({order_product})
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -36,14 +36,14 @@ class Order_productController {
     async update(req, res, next) {
         try {
             const {id} = req.params
-            const {count_order_product, id_order, id_product} = req.body
+            const {count_order_product, id_order, id_cart_product} = req.body
             const order_product = await Order_product.findByPk(id)
 
             if(!order_product) {
                 return next(ApiError.badRequest({message: `Order product with id ${id} not found`}))
             }
 
-            await order_product.update({count_order_product, id_order, id_product})
+            await order_product.update({count_order_product, id_order, id_cart_product})
             return res.json(order_product)
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -65,7 +65,6 @@ class Order_productController {
             next(ApiError.badRequest(e.message))
         }
     }
-
 }
 
 module.exports = new Order_productController()
