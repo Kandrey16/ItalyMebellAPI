@@ -1048,16 +1048,13 @@
             "schema": {
               "type": "object",
               "properties": {
-                "number_order": {
+                "order": {
                   "example": "any"
                 },
-                "price_order": {
+                "address": {
                   "example": "any"
                 },
-                "date_order": {
-                  "example": "any"
-                },
-                "id_order_address": {
+                "products": {
                   "example": "any"
                 }
               }

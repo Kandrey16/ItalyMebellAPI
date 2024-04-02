@@ -62,8 +62,8 @@ Order_product.belongsTo(Orders, { foreignKey: 'id_order', as: 'order' });
 Orders.hasMany(Order_product, { foreignKey: 'id_order', as: 'order_product' });
 
 // Связь Cart_product с Order_product
-Cart_product.hasMany(Order_product, { foreignKey: 'id_cart_product' });
-Order_product.belongsTo(Cart_product, { foreignKey: 'id_cart_product' });
+Product.hasMany(Order_product, { foreignKey: 'id_product' });
+Order_product.belongsTo(Product, { foreignKey: 'id_product' });
 
 Product_comment.belongsTo(Product, { foreignKey: 'id_product' });
 Product.hasMany(Product_comment, { foreignKey: 'id_product' });

@@ -1,4 +1,4 @@
-const {Order_address, Orders, Order_product} = require("../models/association");
+const {Order_address, Orders, Order_product, Cart, Cart_product} = require("../models/association");
 const sequelize  = require('../db')
 const ApiError = require("../error/ApiError");
 
@@ -7,36 +7,53 @@ class OrdersController {
         const t = await sequelize.transaction();
         try {
             const { order, address, products } = req.body; // Предполагаем, что в теле запроса есть данные заказа, адреса и продуктов
-
             // Создаем адрес заказа
             const order_address = await Order_address.create(address, { transaction: t });
-
             // Создаем заказ с id адреса
             const createdOrder = await Orders.create({...order, id_order_address: order_address.id_order_address}, { transaction: t });
 
+            if (!address.email_user) {
+                throw new Error(`email_user is missing from the address object`);
+            }
+            
             // Создаем продукты заказа
             for (const product of products) {
-                await Order_product.create({...product, id_order: createdOrder.id_order}, { transaction: t });
+                // Здесь добавлен поиск соответствующего id_product на основе id_cart_product
+                const cartProduct = await Cart_product.findOne({
+                    where: { id_cart_product: product.id_cart_product }
+                });
+
+                if (!cartProduct) {
+                    throw new Error(`Cart product with id ${product.id_cart_product} not found`);
+                }
+
+                await Order_product.create({
+                    count_order_product: product.count_order_product,
+                    id_order: createdOrder.id_order,
+                    id_product: cartProduct.id_product   // Здесь сохраняется найденный id_product
+                }, { transaction: t });
+            }
+
+            // Очистка корзины после создания заказа
+            const userCart = await Cart.findOne({
+                where: { email_user: address.email_user }
+            });
+
+            if (userCart) {
+                await Cart_product.destroy({
+                    where: {id_cart: userCart.id_cart},
+                    transaction: t
+                });
             }
 
             await t.commit();
             return res.json({ order: createdOrder, address: order_address, products: products });
         } catch (e) {
+            // Откат транзакции в случае ошибки и выброс исключения
             await t.rollback();
             next(ApiError.badRequest(e.message));
         }
     }
-    // async create(req, res, next) {
-    //     const t = await sequelize.transaction();
-    //     try {
-    //
-    //         const {number_order, price_order, date_order, id_order_address} = req.body
-    //         const order = await Orders.create({number_order, price_order, date_order, id_order_address})
-    //         return res.json({order})
-    //     } catch (e) {
-    //         next(ApiError.badRequest(e.message))
-    //     }
-    // }
 
     async getAll(req, res) {
         const orders = await Orders.findAll({
