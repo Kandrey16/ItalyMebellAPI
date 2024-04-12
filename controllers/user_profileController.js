@@ -87,11 +87,17 @@ class User_profileController {
 
             let filename = user_profile.image_user_profile;
             if (image_user_profile) {
-                filename = uuid.v4() + '.jpg'
+                filename = uuid.v4() + path.extname(image_user_profile.name);
                 await image_user_profile.mv(path.resolve(__dirname, '..', 'user_photo', filename))
             }
 
-            let updatedFields = { role_user, first_name_user, second_name_user, phone_number_client, image_user_profile: filename };
+            let updatedFields = {
+                role_user,
+                first_name_user,
+                second_name_user,
+                phone_number_client,
+                image_user_profile: filename
+            };
 
             if (password_user) {
                 const hashPassword = await bcrypt.hash(password_user, 5);

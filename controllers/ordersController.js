@@ -15,7 +15,7 @@ class OrdersController {
             if (!address.email_user) {
                 throw new Error(`email_user is missing from the address object`);
             }
-            
+
             // Создаем продукты заказа
             for (const product of products) {
                 // Здесь добавлен поиск соответствующего id_product на основе id_cart_product
@@ -49,7 +49,6 @@ class OrdersController {
             await t.commit();
             return res.json({ order: createdOrder, address: order_address, products: products });
         } catch (e) {
-            // Откат транзакции в случае ошибки и выброс исключения
             await t.rollback();
             next(ApiError.badRequest(e.message));
         }

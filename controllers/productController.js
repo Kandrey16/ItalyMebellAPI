@@ -1,5 +1,5 @@
 //controller.js
-const {Product, Category, Attribute, Attribute_group, Specification} = require('../models/association')
+const {Product, Attribute, Attribute_group, Specification} = require('../models/association')
 const {Op} = require("sequelize");
 const ApiError = require('../error/ApiError')
 const uuid = require("uuid");
@@ -118,21 +118,30 @@ class ProductController {
             const product = await Product.findOne(
                 {
                     where: {id_product: id},
-                    include: [{model: Specification, as: 'specifications'}]
+                    include: [
+                        {
+                            model: Specification,
+                            as: 'specifications',
+                            include: [{
+                                model: Attribute,
+                                as: 'attribute',
+                                include: [{
+                                    model: Attribute_group,
+                                    as: 'attribute_group',
+                                }]
+                            }]
+                        }
+                    ]
                 },
             );
-
             if (!product) {
                 return next(ApiError.badRequest(`Product with id ${id} not found`));
             }
-
             return res.json(product);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
     }
-
-
 
     async update(req, res, next) {
         try {

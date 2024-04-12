@@ -1,0 +1,250 @@
+@startuml diagram
+
+class User_profileController {
+    +registration(req, res, next)
+    +login(req, res, next)
+    +check(req, res, next)
+    +getAll(req, res)
+    +update(req, res, next)
+}
+
+class Attribute_groupController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class AttributeController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class CartController {
+    +createCart(req, res, next)
+    +addToCart(req, res, next)
+    +updateCartItem(req, res, next)
+    +removeFromCart(req, res, next)
+    +getCart(req, res, next)
+}
+
+class CategoryController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class Image_commentController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class Order_addressController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class Order_productController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class OrdersController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class Product_commentController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class Product_imageController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class ProductController {
+    +create(req, res, next)
+    +search(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+class SpecificationController {
+    +create(req, res, next)
+    +getAll(req, res)
+    +getOne(req, res, next)
+    +update(req, res, next)
+    +delete(req, res, next)
+}
+
+entity User_profile {
+    + email_user: PK
+    --
+    first_name_user
+    second_name_user
+    password_user
+    role_user
+    phone_number_client
+    image_user_profile
+}
+
+entity Attribute_group {
+    + id_attribute_group: PK
+    --
+    name_attribute_group
+}
+
+entity Attribute {
+    + id_attribute: PK
+    --
+    name_attribute
+    id_attribute_group: FK
+}
+
+entity Cart {
+    + id_cart: PK
+    --
+    email_user: FK
+}
+
+entity Cart_product {
+    + id_cart_product: PK
+    --
+    id_cart: FK
+    id_product: FK
+}
+
+entity Category {
+    + id_category: PK
+    --
+    name_category
+}
+
+entity Product {
+    + id_product: PK
+    --
+    article_product
+    name_product
+    price_product
+    url_main_image_product
+    description_product
+    count_product
+    is_enabled
+    id_category: FK
+}
+
+entity Specification {
+    + id_specification: PK
+    --
+    value_specification
+    id_attribute: FK
+    id_product: FK
+}
+
+entity Product_image {
+    + id_product_image: PK
+    --
+    url_image
+    id_product: FK
+}
+
+entity Product_comment {
+    + id_product_comment: PK
+    --
+    mark_comment
+    description_comment
+    id_product: FK
+    email_user: FK
+}
+
+entity Image_comment {
+    + id_image_comment: PK
+    --
+    text_comment
+    id_product_comment: FK
+}
+
+entity Order_address {
+    + id_order_address: PK
+    --
+    country
+    city
+    street
+    house
+    apartment
+    postal_code
+    email_user: FK
+}
+
+entity Orders {
+    + id_order: PK
+    --
+    status
+    id_order_address: FK
+}
+
+entity Order_product {
+    + id_order_product: PK
+    --
+    id_product: FK
+    id_order: FK
+}
+
+User_profileController --> User_profile
+Attribute_groupController --> Attribute_group
+AttributeController --> Attribute
+CartController --> Cart
+CategoryController --> Category
+Image_commentController --> Image_comment
+Order_addressController --> Order_address
+Order_productController --> Order_product
+OrdersController --> Orders
+Product_commentController --> Product_comment
+Product_imageController --> Product_image
+ProductController --> Product
+SpecificationController --> Specification
+
+User_profile ||--o{ Order_address
+User_profile ||--o{ Product_comment
+User_profile ||--o{ Cart
+Cart ||--o{ Cart_product
+Product_comment ||--o{ Product
+Product ||--o{ Product_image
+Product ||--o{ Specification
+Specification ||--o{ Attribute
+Product_comment ||--o{ Image_comment
+Order_address ||--o{ Orders
+Orders ||--o{ Order_product
+Order_product ||--o{ Product
+Attribute_group ||--o{ Attribute
+Product ||--o{ Category
+
+@enduml
