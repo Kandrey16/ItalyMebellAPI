@@ -20,8 +20,11 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
+
 app.use(express.static(path.resolve(__dirname, 'static')))
-app.use('/user_photo', express.static(path.resolve(__dirname, 'user_photo')));
+app.use('/user_photo', express.static(path.resolve(__dirname, 'static', 'user_photo')));
+app.use('/category_photo', express.static(path.resolve(__dirname, 'static', 'category_photo')));
+
 app.use(fileUpload({}))
 app.use('/api', router)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

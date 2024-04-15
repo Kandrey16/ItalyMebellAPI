@@ -1,7 +1,7 @@
 const ApiError = require('../error/ApiError')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {User_profile, Product} = require('../models/association')
+const {User_profile, Product, Category} = require('../models/association')
 const uuid = require("uuid");
 const path = require("path");
 
@@ -26,7 +26,7 @@ class User_profileController {
         const hashPassword = await bcrypt.hash(password_user, 5)
         const user = await  User_profile.create(
             {email_user, password_user: hashPassword, role_user})
-        const token = generateJwt(user.id, user.email_user, user.role_user)
+        const token = generateJwt(user.email_user, user.role_user)
         return res.json({token})
     }
 
@@ -73,6 +73,22 @@ class User_profileController {
         return res.json(user_profiles)
     }
 
+    async getOne(req, res, next) {
+        try {
+            const { email_user } = req.params;
+            const user_profile = await User_profile.findOne({
+                where: { email_user: email_user }
+            });
+
+            if (!user_profile) {
+                return next(ApiError.badRequest(`User profile with email_user ${email_user} not found`));
+            }
+            return res.json(user_profile);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
+
     async update(req, res, next) {
         try {
             const {email_user} = req.params
@@ -88,7 +104,7 @@ class User_profileController {
             let filename = user_profile.image_user_profile;
             if (image_user_profile) {
                 filename = uuid.v4() + path.extname(image_user_profile.name);
-                await image_user_profile.mv(path.resolve(__dirname, '..', 'user_photo', filename))
+                await image_user_profile.mv(path.resolve(__dirname, '..', 'static', 'user_photo', filename))
             }
 
             let updatedFields = {

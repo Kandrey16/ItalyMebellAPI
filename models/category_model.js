@@ -13,6 +13,10 @@ const Category = sequelize.define('category', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    img_category: {
+        type: DataTypes.TEXT,
+        allow: true,
+    }
 })
 
 module.exports = Category;

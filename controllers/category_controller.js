@@ -1,12 +1,19 @@
 const {Category} = require('../models/association')
 const ApiError = require('../error/ApiError')
+const uuid = require("uuid");
+const path = require("path");
 
 class CategoryController {
 
     async create(req, res, next) {
         try {
             const {name_category} = req.body
-            const category = await Category.create({name_category})
+            const {img_category} = req.files || {}
+
+            let filename = uuid.v4() + '.jpg'
+            await img_category.mv(path.resolve(__dirname, '..', 'static', 'category_photo', filename))
+
+            const category = await Category.create({name_category, img_category: filename})
             return res.json({category})
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -36,12 +43,21 @@ class CategoryController {
         try {
             const {id} = req.params
             const {name_category} = req.body
+            const {img_category} = req.files || {}
+
             const category = await Category.findByPk(id)
 
             if(!category) {
                 return next(ApiError.badRequest({message: `Category with id ${id} not found`}))
             }
-            await category.update({name_category})
+
+            let filename = category.img_category;
+            if(img_category) {
+                filename = uuid.v4() + '.jpg'
+                await img_category.mv(path.resolve(__dirname, '..', 'static', 'category_photo', filename))
+            }
+
+            await category.update({name_category, img_category: filename})
             return res.json(category)
         } catch (e) {
             next(ApiError.badRequest(e.message))
