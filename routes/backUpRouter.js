@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { backupDatabase } = require('../backup');
+const { backupDatabase } = require('../utils/backup');
 
 router.post('/database/backup', (req, res) => {
     try {

@@ -33,7 +33,6 @@ class ProductController {
                         id_attribute,
                     })
                 }
-
             }
             return res.json(product)
         } catch (e) {
@@ -49,9 +48,8 @@ class ProductController {
                 return next(ApiError.badRequest('Keyword is missing'))
             }
 
-            // Поиск по таблице Product
             const products = await Product.findAll({
-                attributes: { exclude: ['id_product'] }, // исключаем атрибут id_product
+                attributes: { exclude: ['id_product'] },
                 where: {
                     [Op.or]: [
                         { name_product: { [Op.like]: `%${String(keyword)}%` } },
@@ -67,6 +65,8 @@ class ProductController {
             next(ApiError.badRequest(e.message));
         }
     }
+
+
 // include: [
     //     // Добавляем связи с другими таблицами
     //     {

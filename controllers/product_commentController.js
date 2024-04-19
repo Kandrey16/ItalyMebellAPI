@@ -1,11 +1,13 @@
-const {Product_comment} = require("../models/association");
+const {Product_comment, Product} = require("../models/association");
 const ApiError = require("../error/ApiError");
-
+const updateRating = require('../utils/updateRating')
 class Product_commentController {
     async create(req, res, next) {
         try {
             const {mark_comment, description_comment, id_product, email_user} = req.body
             const product_comment = await Product_comment.create({mark_comment, description_comment, id_product, email_user})
+            await updateRating(id_product)
+
             return res.json({product_comment})
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -43,6 +45,8 @@ class Product_commentController {
             }
 
             await product_comment.update({mark_comment, description_comment, id_product, email_user})
+            await updateRating(id_product)
+
             return res.json(product_comment)
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -59,6 +63,8 @@ class Product_commentController {
             }
 
             await product_comment.destroy()
+            await updateRating(id)
+
             return res.json({ message: 'Product Comment deleted successfully' })
         } catch (e) {
             next(ApiError.badRequest(e.message))

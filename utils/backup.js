@@ -13,7 +13,7 @@ function backupDatabase() {
 
     const backupPath = path.join(backupDir, backupFilename);
     const env = 'development'; // or 'production' or 'test'
-    const config = require('./config/config.json')[env];
+    const config = require('../config/config.json')[env];
 
     // Устанавливаем значение переменной окружения с паролем
     process.env.PGPASSWORD = config.password;

@@ -26,6 +26,11 @@ const Product = sequelize.define('product', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
+    rating: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        defaultValue: null,
+    },
     url_main_image_product: {
         type: DataTypes.TEXT,
         allowNull: true,
