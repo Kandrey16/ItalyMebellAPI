@@ -1,7 +1,7 @@
 const sequelize = require("../db");
 const {DataTypes} = require("sequelize");
 
-const ConfigurationCode = sequelize.define('configuration_codes', {
+const ConfirmationCode = sequelize.define('confirmation_codes', {
     email_user: {
         type: DataTypes.STRING,
         primaryKey: true,
@@ -18,6 +18,9 @@ const ConfigurationCode = sequelize.define('configuration_codes', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
     }
-})
+}, {
+    timestamps: true, // Включаем timestamps для Sequelize
+    updatedAt: false // Отключаем createdAt, так как оно определено вручную
+});
 
-module.exports = Collection;
+module.exports = ConfirmationCode;

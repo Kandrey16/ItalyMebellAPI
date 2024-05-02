@@ -1,16 +1,17 @@
-const {Order_address, Orders, Order_product, Cart, Cart_product} = require("../models/association");
+const {Order_address, Orders, Order_product, Cart, Cart_product, Payment_method} = require("../models/association");
 const sequelize  = require('../db')
 const ApiError = require("../error/ApiError");
-
+const {sendOrderDetailsEmail } = require('../utils/mailer')
+const logger = require("../utils/logger");
 class OrdersController {
     async create(req, res, next) {
         const t = await sequelize.transaction();
         try {
-            const { order, address, products } = req.body; // Предполагаем, что в теле запроса есть данные заказа, адреса и продуктов
+            const { order, address, products, payment_method, order_delivery, order_status } = req.body; // Предполагаем, что в теле запроса есть данные заказа, адреса и продуктов
             // Создаем адрес заказа
             const order_address = await Order_address.create(address, { transaction: t });
             // Создаем заказ с id адреса
-            const createdOrder = await Orders.create({...order, id_order_address: order_address.id_order_address}, { transaction: t });
+            const createdOrder = await Orders.create({...order, id_order_address: order_address.id_order_address, id_payment_method: payment_method.id_payment_method, id_order_delivery: order_delivery.id_order_delivery, id_order_status: order_status.id_order_status}, { transaction: t });
 
             if (!address.email_user) {
                 throw new Error(`email_user is missing from the address object`);
@@ -30,7 +31,7 @@ class OrdersController {
                 await Order_product.create({
                     count_order_product: product.count_order_product,
                     id_order: createdOrder.id_order,
-                    id_product: cartProduct.id_product   // Здесь сохраняется найденный id_product
+                    id_product: cartProduct.id_product
                 }, { transaction: t });
             }
 
@@ -47,21 +48,48 @@ class OrdersController {
             }
 
             await t.commit();
-            return res.json({ order: createdOrder, address: order_address, products: products });
+
+            const orderDetails = {
+                order: createdOrder,
+                address: order_address,
+                products: products.map(p => ({
+                    name_product: p.name_product, // предполагаем, что имя продукта приходит в теле запроса
+                    count_order_product: p.count_order_product
+                })),
+                payment_method,
+                order_delivery,
+                order_status,
+            };
+
+            await sendOrderDetailsEmail(orderDetails.address.email_user, orderDetails);
+
+            return res.json({ order: createdOrder, address: order_address, products: products, payment_method: payment_method, order_delivery: order_delivery, order_status: order_status });
         } catch (e) {
             await t.rollback();
             next(ApiError.badRequest(e.message));
         }
     }
 
+
     async getAll(req, res) {
-        const orders = await Orders.findAll({
-            include: [
-                { model: Order_address, as: 'order_address' }, // Замените 'order_address' на имя связи, если оно отличается
-                { model: Order_product, as: 'order_product' }  // Замените 'order_products' на имя связи, если оно отличается
-            ]
-        });
-        return res.json(orders);
+        const { email_user } = req.query;
+
+        try {
+            const orders = await Orders.findAll({
+                include: [{
+                    model: Order_address,
+                    as: 'order_address',
+                    where: email_user ? { email_user: email_user } : undefined, // Фильтрация по Order_address.email_user
+                }, {
+                    model: Order_product,
+                    as: 'order_product'
+                }]
+            });
+            return res.json(orders);
+        } catch (error) {
+            console.error('Ошибка при получении заказов:', error);
+            return res.status(500).json({ message: 'Ошибка на сервере при получении списка заказов.' });
+        }
     }
 
     async getOne(req, res, next) {
@@ -69,8 +97,9 @@ class OrdersController {
             const { id } = req.params;
             const order = await Orders.findByPk(id, {
                 include: [
-                    { model: Order_address, as: 'order_address' }, // Замените 'order_address' на имя связи, если оно отличается
-                    { model: Order_product, as: 'order_product' }  // Замените 'order_products' на имя связи, если оно отличается
+                    { model: Order_address, as: 'order_address' },
+                    { model: Order_product, as: 'order_product' },
+                    // { model: Payment_method, as: 'payment_method' },
                 ]
             });
 
@@ -86,7 +115,7 @@ class OrdersController {
 
     async update(req, res, next) {
         const { id } = req.params; // ID заказа для обновления
-        const { order, address, products } = req.body; // Обновленные данные для заказа, адреса и продуктов
+        const { order, address, products, id_payment_method, id_order_delivery, id_order_status } = req.body; // Расширьте данные для обновления
 
         const t = await sequelize.transaction();
         try {
@@ -94,7 +123,10 @@ class OrdersController {
             const foundOrder = await Orders.findByPk(id, { transaction: t });
             if (!foundOrder) throw new Error(`Order with ID ${id} not found`);
 
-            await foundOrder.update(order, { transaction: t });
+            await foundOrder.update({ ...order, id_payment_method, id_order_delivery, id_order_status }, { transaction: t });
+            // logger.debug(JSON.stringify(...order, null, 2))
+            const updatedOrder = await Orders.findByPk(id, { transaction: t });
+            if (!updatedOrder) throw new Error('Error fetching updated order');
 
             // Находим адрес заказа и обновляем его
             if (address && address.id_order_address) {
@@ -115,7 +147,9 @@ class OrdersController {
             }
 
             await t.commit();
+            // Передача данных обновленного заказа в ответ
             return res.json({ message: `Order with ID ${id} updated successfully` });
+
         } catch (e) {
             await t.rollback();
             next(ApiError.badRequest(e.message));

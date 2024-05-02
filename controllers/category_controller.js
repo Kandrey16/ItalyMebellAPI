@@ -1,7 +1,8 @@
-const {Category} = require('../models/association')
+const {Category, Attribute_group} = require('../models/association')
 const ApiError = require('../error/ApiError')
 const uuid = require("uuid");
 const path = require("path");
+const {error} = require("winston");
 
 class CategoryController {
 
@@ -23,6 +24,23 @@ class CategoryController {
     async getAll(req, res) {
         const categories = await Category.findAll()
         return res.json(categories)
+    }
+
+    async getCategoryAttributes(req, res, next) {
+        try {
+            const category_id = req.params.id
+            const categoryWithAttributes = await Category.findByPk(category_id, {
+                include: Attribute_group
+            });
+
+            if (categoryWithAttributes) {
+                return res.json(categoryWithAttributes)
+            } else {
+                res.status(404).send('Категория не найдена')
+            }
+        } catch (e) {
+            res.status(500).send('Ошибка при получении атрибутов категории: ' + e.message);
+        }
     }
 
     async getOne(req, res, next) {

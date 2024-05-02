@@ -575,24 +575,29 @@
     },
     "/category/": {
       "post": {
-        "description": "",
+        "description": "Создает новую категорию с изображением.",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name_category": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "name_category",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Название категории"
+          },
+          {
+            "name": "img_category",
+            "in": "formData",
+            "type": "file",
+            "required": false,
+            "description": "Изображение категории"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Категория успешно создана"
           }
         }
       },
@@ -623,30 +628,36 @@
         }
       },
       "put": {
-        "description": "",
+        "description": "Обновляет данные о категории и её изображение по ID.",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Идентификатор категории"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name_category": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "name_category",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Название категории"
+          },
+          {
+            "name": "img_category",
+            "in": "formData",
+            "type": "file",
+            "required": false,
+            "description": "Новое изображение категории"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Данные категории обновлены"
           }
         }
       },
@@ -1684,7 +1695,8 @@
         }
       },
       "put": {
-        "description": "",
+        "description": "Update user profile and upload photo",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "name": "email_user",
@@ -1693,36 +1705,49 @@
             "type": "string"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "password_user": {
-                  "example": "any"
-                },
-                "role_user": {
-                  "example": "any"
-                },
-                "first_name_user": {
-                  "example": "any"
-                },
-                "second_name_user": {
-                  "example": "any"
-                },
-                "phone_number_client": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "password_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "role_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "first_name_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "second_name_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "phone_number_client",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "image_user_profile",
+            "in": "formData",
+            "description": "The photo of the user",
+            "required": false,
+            "type": "file"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "User profile updated successfully"
           }
         }
       }
-    },
+    }
   }
 }

@@ -1,4 +1,4 @@
-const {Attribute_group} = require('../models/association')
+const {Attribute_group, Attribute} = require('../models/association')
 const ApiError = require('../error/ApiError')
 
 class Attribute_groupController {

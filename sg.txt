@@ -1,3 +1,189 @@
+async getAll(req, res) {
+        // Извлекаем параметры фильтрации из запроса
+        let { id_category, price_min, price_max, rating_min, specifications, limit, page } = req.query;
+        console.log("Параметры запроса:", req.query);
+        // Устанавливаем значения по умолчанию для страницы и лимита, если они не были предоставлены
+        page = page || 1;
+        limit = limit || 9;
+        let offset = page * limit - limit; // Вычисляем смещение для пагинации
+
+        let filters = {}; // Объект для фильтрации товаров по данной категории, цене и рейтингу
+        let specificationFilters = []; // Массив условий для фильтрации товаров по их спецификациям
+
+        // Обрабатываем фильтр по категории
+        if (id_category) {
+            filters.id_category = id_category; // Добавляем фильтр по id категории
+        }
+        // Обрабатываем фильтры по ценовому диапазону
+        if (price_min || price_max) {
+            filters.price_product = {};
+            if (price_min) filters.price_product[Op.gte] = price_min; // Добавляем минимальную цену
+            if (price_max) filters.price_product[Op.lte] = price_max; // Добавляем максимальную цену
+        }
+        // Обрабатываем фильтр по минимальному рейтингу
+        if (rating_min) {
+            filters.rating = { [Op.gte]: rating_min }; // Добавляем фильтр по рейтингу
+        }
+
+        // Обрабатываем фильтр по спецификациям
+        // if (specifications) {
+        //     specifications = JSON.parse(specifications); // Преобразуем строку в формате JSON со списком спецификаций и их значений
+        //     console.debug(specifications)
+        //     for (const [name, value] of Object.entries(specifications)) {
+        //         // Для каждого значения создаём условие фильтрации и добавляем его в массив
+        //         specificationFilters.push({
+        //             '$specifications.attribute.name_attribute$': name, // Используем имя атрибута
+        //             '$specifications.value_specification$': value // Используем значение спецификации
+        //         });
+        //     }
+        // }
+        if (specifications && Array.isArray(specifications)) {
+            // Проходимся по каждой спецификации
+            for (const spec of specifications) {
+                console.log(spec)
+                // Проверяем, есть ли имя атрибута и значение характеристики
+                if (spec.id_attribute && spec.value_specification) {
+                    // Добавляем фильтр по атрибуту и его значению
+                    specificationFilters.push({
+                        '$specifications.attribute.id_attribute$': spec.id_attribute,
+                        '$specifications.value_specification$': spec.value_specification
+                    });
+                }
+            }
+        }
+
+        if (specificationFilters.length > 0) {
+            filters[Op.and] = specificationFilters;
+        }
+        // Пытаемся получить список товаров, учитывая заданные фильтры
+        try {
+            let products = await Product.findAndCountAll({
+                where: { ...filters }, // Используем объект filters для фильтрации
+                include: [
+                    {
+                        model: Specification,
+                        as: 'specifications',
+                        // required: specificationFilters.length > 0,
+                        // where: specificationFilters.length > 0 ? { [Op.and]: specificationFilters } : undefined,
+                        include: {
+                            model: Attribute,
+                            as: 'attribute',
+                            include: {
+                                model: Attribute_group,
+                                as: 'attribute_group',
+                            }
+                        }
+                    }
+                ],
+                limit, // Ограничение количества товаров в ответе
+                offset, // Смещение для пагинации
+                distinct: true, // Это нужно для корректного подсчёта общего количества товаров
+                // ...(specificationFilters.length > 0 && { where: { [Op.and]: specificationFilters } }) // Условия для фильтрации по спецификациям
+            });
+            // Возвращаем список товаров клиенту
+            return res.json(products);
+        } catch (e) {
+            console.error(e)
+            return res.status(500).json({ message: "Ошибка при получении списка товаров:" + e.message });
+        }
+    }
+
+"/collection/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_collection": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/collection/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_collection": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+
+
 {
   "swagger": "2.0",
   "info": {
@@ -58,6 +244,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -575,29 +764,24 @@
     },
     "/category/": {
       "post": {
-        "description": "Создает новую категорию с изображением.",
-        "consumes": [
-          "multipart/form-data"
-        ],
+        "description": "",
         "parameters": [
           {
-            "name": "name_category",
-            "in": "formData",
-            "required": true,
-            "type": "string",
-            "description": "Название категории"
-          },
-          {
-            "name": "img_category",
-            "in": "formData",
-            "type": "file",
-            "required": false,
-            "description": "Изображение категории"
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_category": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Категория успешно создана"
+            "description": "OK"
           }
         }
       },
@@ -606,6 +790,31 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/category/{id}/attributes": {
+      "get": {
+        "description": "Получение атрибутов категории по идентификатору",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Уникальный идентификатор категории"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Атрибуты категории успешно получены"
+          },
+          "404": {
+            "description": "Категория не найдена"
+          },
+          "500": {
+            "description": "Ошибка сервера"
           }
         }
       }
@@ -628,36 +837,30 @@
         }
       },
       "put": {
-        "description": "Обновляет данные о категории и её изображение по ID.",
-        "consumes": [
-          "multipart/form-data"
-        ],
+        "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Идентификатор категории"
+            "type": "string"
           },
           {
-            "name": "name_category",
-            "in": "formData",
-            "required": true,
-            "type": "string",
-            "description": "Название категории"
-          },
-          {
-            "name": "img_category",
-            "in": "formData",
-            "type": "file",
-            "required": false,
-            "description": "Новое изображение категории"
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_category": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Данные категории обновлены"
+            "description": "OK"
           }
         }
       },
@@ -1020,6 +1223,9 @@
                 },
                 "products": {
                   "example": "any"
+                },
+                "payment_method": {
+                  "example": "any"
                 }
               }
             }
@@ -1032,10 +1238,27 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Получение списка заказов по email пользователя",
+        "parameters": [
+          {
+            "name": "email_user",
+            "in": "query",
+            "description": "Email пользователя для фильтрации заказов",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Успешное получение списка заказов"
+          },
+          "400": {
+            "description": "Неверный запрос, если параметры не удовлетворяют требованиям"
+          },
+          "404": {
+            "description": "Заказы не найдены"
           }
         }
       }
@@ -1108,6 +1331,103 @@
         }
       }
     },
+    "/payment_method/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_payment_method": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/payment_method/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_payment_method": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/product_comment/": {
       "post": {
         "description": "",
@@ -1141,10 +1461,27 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Получение списка заказов по email пользователя",
+        "parameters": [
+          {
+            "name": "email_user",
+            "in": "query",
+            "description": "Email пользователя для фильтрации отзывов",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Успешное получение списка отзывов"
+          },
+          "400": {
+            "description": "Неверный запрос, если параметры не удовлетворяют требованиям"
+          },
+          "404": {
+            "description": "Заказы не найдены"
           }
         }
       }
@@ -1362,27 +1699,83 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Retrieve a list of products with optional filters",
         "parameters": [
           {
             "name": "id_category",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Filter products by category ID"
+          },
+          {
+            "name": "price_min",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a price greater than or equal to this value"
+          },
+          {
+            "name": "price_max",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a price less than or equal to this value"
+          },
+          {
+            "name": "rating_min",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a rating greater than or equal to this value"
+          },
+          {
+            "name": "specifications",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filter products by specifications; expected as a JSON string of key-value pairs"
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Limit the number of products returned"
           },
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Page number for results pagination"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A list of products that match the filter criteria",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Total number of products that match the criteria"
+                },
+                "rows": {
+                  "type": "array",
+                  "description": "List of products on the current page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The request was invalid or cannot be served."
+          },
+          "500": {
+            "description": "An error occurred on the server while fetching the products."
           }
         }
       }
@@ -1678,7 +2071,7 @@
       }
     },
     "/user_profile/{email_user}": {
-        "get": {
+      "get": {
         "description": "",
         "parameters": [
           {
@@ -1695,8 +2088,7 @@
         }
       },
       "put": {
-        "description": "Update user profile and upload photo",
-        "consumes": ["multipart/form-data"],
+        "description": "",
         "parameters": [
           {
             "name": "email_user",
@@ -1705,49 +2097,130 @@
             "type": "string"
           },
           {
-            "name": "password_user",
-            "in": "formData",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "role_user",
-            "in": "formData",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "first_name_user",
-            "in": "formData",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "second_name_user",
-            "in": "formData",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "phone_number_client",
-            "in": "formData",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "image_user_profile",
-            "in": "formData",
-            "description": "The photo of the user",
-            "required": false,
-            "type": "file"
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password_user": {
+                  "example": "any"
+                },
+                "role_user": {
+                  "example": "any"
+                },
+                "first_name_user": {
+                  "example": "any"
+                },
+                "second_name_user": {
+                  "example": "any"
+                },
+                "phone_number_client": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "User profile updated successfully"
+            "description": "OK"
           }
         }
       }
     },
+    "/search": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/registration": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email_user": {
+                  "example": "any"
+                },
+                "password_user": {
+                  "example": "any"
+                },
+                "role_user": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email_user": {
+                  "example": "any"
+                },
+                "password_user": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/auth": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
   }
 }

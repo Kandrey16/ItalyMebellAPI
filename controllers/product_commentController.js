@@ -15,7 +15,14 @@ class Product_commentController {
     }
 
     async getAll(req, res) {
-        const product_comments = await Product_comment.findAll()
+        const {email_user} = req.query;
+
+        let product_comments
+        if (email_user) {
+            product_comments = await Product_comment.findAll({where:{email_user}})
+        } else {
+            product_comments = await Product_comment.findAll()
+        }
         return res.json(product_comments)
     }
 
