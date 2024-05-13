@@ -2,6 +2,7 @@ const uuid = require('uuid')
 const path = require('path')
 const {Product_image, Product} = require("../models/association");
 const ApiError = require("../error/ApiError");
+const {where} = require("sequelize");
 
 class Product_imageController {
     async create(req, res, next) {
@@ -9,9 +10,9 @@ class Product_imageController {
             const {id_product} = req.body
             const {url_image} = req.files || {}
 
-            // if (!url_image) {
-            //     throw ApiError.badRequest("Image file is missing");
-            // }
+            if (!url_image) {
+                throw ApiError.badRequest("Image file is missing");
+            }
 
             let filename = uuid.v4() + '.jpg'
             await url_image.mv(path.resolve(__dirname, '..', 'static', filename))
@@ -24,7 +25,14 @@ class Product_imageController {
     }
 
     async getAll(req, res) {
-        const product_images = await Product_image.findAll()
+        const {id_product} = req.query;
+
+        let product_images
+        if (id_product) {
+            product_images = await Product_image.findAll({where: {id_product}});
+        } else {
+            product_images = await Product_image.findAll();
+        }
         return res.json(product_images)
     }
 
@@ -45,18 +53,27 @@ class Product_imageController {
 
     async update(req, res, next) {
         try {
-            const {id} = req.params
-            const {url_image, id_product} = req.body
-            const product_image = await Product_image.findByPk(id)
+            const {id} = req.params;
+            const {id_product} = req.body; // Текущий id_product можно оставить, если предполагается его обновление
+            const {url_image} = req.files || {};
 
-            if(!product_image) {
-                return next(ApiError.badRequest({message: `Product Image with id ${id} not found`}))
+            if (!url_image) {
+                throw ApiError.badRequest("Image file is missing");
             }
 
-            await product_image.update({url_image, id_product})
-            return res.json(product_image)
+            let filename = uuid.v4() + path.extname(url_image.name); // Генерация уникального имени файла с сохранением оригинального расширения
+            await url_image.mv(path.resolve(__dirname, '..', 'static', filename)); // Перемещение файла в папку "static"
+
+            const product_image = await Product_image.findByPk(id);
+
+            if (!product_image) {
+                return next(ApiError.badRequest(`Product Image with id ${id} not found`));
+            }
+
+            await product_image.update({url_image: filename, id_product}); // Обновление записи изображения в БД новым путём
+            return res.json(product_image);
         } catch (e) {
-            next(ApiError.badRequest(e.message))
+            next(ApiError.badRequest(e.message));
         }
     }
 

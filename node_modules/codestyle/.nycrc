@@ -1,0 +1,21 @@
+{
+  "check-coverage": false,
+  "exclude": [
+    "coverage/**/*",
+    "e2e/**/*",
+    "node_modules/**/*",
+    "service/start.js",
+    "service/config.js",
+    "test/**/*"
+  ],
+  "reporter": [
+    "clover",
+    "html",
+    "json",
+    "json-summary",
+    "lcov",
+    "text-summary"
+  ],
+  "cache": true,
+  "all": true
+}

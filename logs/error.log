@@ -24,3 +24,10 @@
 2024-03-20 14:51:59:5159 [31merror[39m: [31mError: This is a simulated error[39m
 2024-03-20 15:16:40:1640 error: Error: This is a simulated error
 2024-03-21 22:24:45:2445 error: оператор не существует: text = integer
+2024-04-22 15:41:35:4135 error: � pg_hba.conf ��� ������ ��� ���������� "192.168.0.138", ������������ "postgres", ���� "MebellDatabase", ��� ����������
+2024-04-26 21:23:25:2325 error: Ошибка при отправке email: connect ETIMEDOUT 142.251.1.109:587
+2024-04-26 21:48:04:484 error: Ошибка при отправке email: Mail command failed: 501 <process.env.MAILRU_EMAIL>: sender address must contain a domain
+2024-05-04 17:49:39:4939 error: 2024-05-04 17:30:40:3040 error: Отсутствует статус активности продукта
+2024-05-04 22:02:11:211 error: оператор не существует: text = integer
+2024-05-06 16:35:33:3533 error: Ошибка при создании продукта:
+2024-05-06 16:35:33:3533 error: Ошибка при создании продукта:

@@ -58,6 +58,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -136,6 +139,19 @@
         }
       }
     },
+    "/database/backup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/create": {
       "post": {
         "description": "",
@@ -172,19 +188,51 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "email_user",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
-          "401": {
-            "description": "Unauthorized"
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password_user": {
+                  "example": "any"
+                },
+                "role_user": {
+                  "example": "any"
+                },
+                "first_name_user": {
+                  "example": "any"
+                },
+                "second_name_user": {
+                  "example": "any"
+                },
+                "phone_number_client": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -519,19 +567,11 @@
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       }
@@ -564,6 +604,31 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/category/{id}/attributes": {
+      "get": {
+        "description": "Получение атрибутов категории по идентификатору",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Уникальный идентификатор категории"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Атрибуты категории успешно получены"
+          },
+          "404": {
+            "description": "Категория не найдена"
+          },
+          "500": {
+            "description": "Ошибка сервера"
           }
         }
       }
@@ -601,6 +666,100 @@
               "type": "object",
               "properties": {
                 "name_category": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/collection/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_collection": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/collection/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_collection": {
                   "example": "any"
                 }
               }
@@ -864,7 +1023,7 @@
                 "id_order": {
                   "example": "any"
                 },
-                "id_product": {
+                "id_cart_product": {
                   "example": "any"
                 }
               }
@@ -924,7 +1083,207 @@
                 "id_order": {
                   "example": "any"
                 },
-                "id_product": {
+                "id_cart_product": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/order_delivery/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_order_delivery": {
+                  "example": "any"
+                },
+                "price_order_delivery": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/order_delivery/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_order_delivery": {
+                  "example": "any"
+                },
+                "price_order_delivery": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/order_status/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_order_status": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/order_status/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_order_status": {
                   "example": "any"
                 }
               }
@@ -964,16 +1323,22 @@
             "schema": {
               "type": "object",
               "properties": {
-                "number_order": {
+                "order": {
                   "example": "any"
                 },
-                "price_order": {
+                "address": {
                   "example": "any"
                 },
-                "date_order": {
+                "products": {
                   "example": "any"
                 },
-                "id_order_address": {
+                "payment_method": {
+                  "example": "any"
+                },
+                "order_delivery": {
+                  "example": "any"
+                },
+                "order_status": {
                   "example": "any"
                 }
               }
@@ -988,9 +1353,19 @@
       },
       "get": {
         "description": "",
+        "parameters": [
+          {
+            "name": "email_user",
+            "in": "query",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -1027,16 +1402,143 @@
             "schema": {
               "type": "object",
               "properties": {
-                "number_order": {
+                "order": {
                   "example": "any"
                 },
-                "price_order": {
+                "address": {
                   "example": "any"
                 },
-                "date_order": {
+                "products": {
                   "example": "any"
                 },
-                "id_order_address": {
+                "payment_method": {
+                  "example": "any"
+                },
+                "order_delivery": {
+                  "example": "any"
+                },
+                "order_status": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/orders/{id}/export": {
+      "get": {
+        "description": "",
+        "produces": [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/payment_method/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_payment_method": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/payment_method/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name_payment_method": {
                   "example": "any"
                 }
               }
@@ -1099,10 +1601,27 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Получение списка заказов по email пользователя",
+        "parameters": [
+          {
+            "name": "email_user",
+            "in": "query",
+            "description": "Email пользователя для фильтрации отзывов",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Успешное получение списка отзывов"
+          },
+          "400": {
+            "description": "Неверный запрос, если параметры не удовлетворяют требованиям"
+          },
+          "404": {
+            "description": "Заказы не найдены"
           }
         }
       }
@@ -1180,97 +1699,111 @@
     },
     "/product_image/": {
       "post": {
-        "description": "",
+        "description": "Create a new product image with an image file and id_product",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id_product": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "id_product",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Product identifier"
+          },
+          {
+            "name": "url_image",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "description": "The image file to upload"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image created successfully"
           }
         }
       },
       "get": {
-        "description": "",
+        "description": "Retrieve all product images or images for a specific product by id_product",
+        "parameters": [
+          {
+            "name": "id_product",
+            "in": "query",
+            "type": "string",
+            "description": "Optional product identifier to filter images"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of product images or filtered images by product"
           }
         }
       }
     },
     "/product_image/{id}": {
       "get": {
-        "description": "",
+        "description": "Retrieve a specific product image by its unique ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A specific product image"
           }
         }
       },
       "put": {
-        "description": "",
+        "description": "Update an existing product image by its ID with a new image",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "url_image": {
-                  "example": "any"
-                },
-                "id_product": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "id_product",
+            "in": "formData",
+            "required": false,
+            "type": "string",
+            "description": "Product identifier (if it needs to be updated)"
+          },
+          {
+            "name": "url_image",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "description": "The new image file to upload"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image updated successfully"
           }
         }
       },
       "delete": {
-        "description": "",
+        "description": "Delete a specific product image by its unique ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image deleted successfully"
           }
         }
       }
@@ -1320,27 +1853,90 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Retrieve a list of products with optional filters",
         "parameters": [
           {
             "name": "id_category",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Filter products by category ID"
+          },
+          {
+            "name": "id_collection",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter products by collection ID"
+          },
+          {
+            "name": "price_min",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a price greater than or equal to this value"
+          },
+          {
+            "name": "price_max",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a price less than or equal to this value"
+          },
+          {
+            "name": "rating_min",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double",
+            "description": "Filter products with a rating greater than or equal to this value"
+          },
+          {
+            "name": "specifications",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filter products by specifications; expected as a JSON string of key-value pairs"
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Limit the number of products returned"
           },
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "integer",
+            "description": "Page number for results pagination"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A list of products that match the filter criteria",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "description": "Total number of products that match the criteria"
+                },
+                "rows": {
+                  "type": "array",
+                  "description": "List of products on the current page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The request was invalid or cannot be served."
+          },
+          "500": {
+            "description": "An error occurred on the server while fetching the products."
           }
         }
       }
@@ -1358,6 +1954,19 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/product/export": {
+      "get": {
+        "description": "",
+        "produces": [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ],
+        "responses": {
+          "default": {
+            "description": ""
           }
         }
       }
@@ -1625,6 +2234,39 @@
         }
       }
     },
+    "/user_profile/change_password": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email_user": {
+                  "example": "any"
+                },
+                "old_password": {
+                  "example": "any"
+                },
+                "new_password": {
+                  "example": "any"
+                },
+                "confirm_password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/user_profile/": {
       "get": {
         "description": "",
@@ -1635,13 +2277,14 @@
         }
       }
     },
-    "/search": {
+    "/user_profile/{email_user}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "keyword",
-            "in": "query",
+            "name": "email_user",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -1650,81 +2293,58 @@
             "description": "OK"
           }
         }
-      }
-    },
-    "/registration": {
-      "post": {
-        "description": "",
+      },
+      "put": {
+        "description": "Update user profile and upload photo",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email_user": {
-                  "example": "any"
-                },
-                "password_user": {
-                  "example": "any"
-                },
-                "role_user": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/login": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email_user": {
-                  "example": "any"
-                },
-                "password_user": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/auth": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
+            "name": "email_user",
+            "in": "path",
+            "required": true,
             "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
           },
-          "401": {
-            "description": "Unauthorized"
+          {
+            "name": "password_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "role_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "first_name_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "second_name_user",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "phone_number_client",
+            "in": "formData",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "image_user_profile",
+            "in": "formData",
+            "description": "The photo of the user",
+            "required": false,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully"
           }
         }
       }

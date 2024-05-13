@@ -5,7 +5,7 @@ module.exports = {
         description: 'ItalyMebell API description',
         version: '1.0.0',
     },
-    host: 'localhost:5000',
+    host: '192.168.0.138:5000',
     basePath: '/api',
     schemes: ['http', 'https'],
     consumes: ['application/json'],

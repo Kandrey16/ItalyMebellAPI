@@ -1,4 +1,4 @@
-const {Specification} = require("../models/association");
+const {Specification, Attribute, Attribute_group} = require("../models/association");
 const ApiError = require("../error/ApiError");
 
 class SpecificationController {
@@ -13,8 +13,17 @@ class SpecificationController {
     }
 
     async getAll(req, res) {
-        const specifications = await Specification.findAll()
-        return res.json(specifications)
+        const specifications = await Specification.findAll({
+            include: [{
+                model: Attribute,
+                as: 'attribute',
+                include: [{
+                    model: Attribute_group,
+                    as: 'attribute_group',
+                }]
+            }]
+        });
+        return res.json(specifications);
     }
 
     async getOne(req, res, next) {

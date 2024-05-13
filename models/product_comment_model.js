@@ -1,5 +1,6 @@
 const sequelize = require("../db");
 const {DataTypes} = require("sequelize");
+// const recalculateAverageRating = require('../middleware/calculateRatingMiddleware')
 
 const Product_comment = sequelize.define('product_comment', {
     id_product_comment: {
@@ -26,3 +27,6 @@ const Product_comment = sequelize.define('product_comment', {
 })
 
 module.exports = Product_comment;
+
+
+

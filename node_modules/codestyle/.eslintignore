@@ -1,0 +1,12 @@
+build
+node_modules
+coverage
+e2e/**/reports
+flow-typed
+react-sprite-animator.js
+__common__
+measure.js
+service/restart.js
+static_wdp.js
+ci-static_wdp.js
+watchman
