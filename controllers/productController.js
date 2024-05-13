@@ -1,42 +1,98 @@
 //controller.js
-const {Product, Attribute, Attribute_group, Specification} = require('../models/association')
+const {Product, Product_image, Attribute, Attribute_group, Specification} = require('../models/association')
 const {Op, Sequelize, QueryTypes} = require("sequelize");
 const ApiError = require('../error/ApiError')
 const sequelize = require('../db')
 const uuid = require("uuid");
 const path = require("path");
 const logger = require('../utils/logger')
-const ExcelJS = require('exceljs')
+
 class ProductController {
 
     async create(req, res, next) {
+        const t = await sequelize.transaction();
         try {
-            let {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category, specifications} = req.body
-            const {url_main_image_product} = req.files || {}
+            logger.debug('2024-05-04 17:30:40:3040 debug: Запрос на создание продукта получен');
+            let {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category, specifications} = req.body;
+            const {url_main_image_product, additional_images} = req.files || {};
+
+            // Проверка наличия основных данных о продукте
+            if (!article_product) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует артикул продукта');
+            if (!name_product) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует название продукта');
+            if (price_product == null) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует цена продукта');
+            if (!description_product) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует описание продукта');
+            if (count_product == null) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует количество продукта');
+            if (!id_category) logger.error('2024-05-04 17:30:40:3040 error: Отсутствует идентификатор категории');
+
+            if (!article_product || !name_product || price_product == null || !description_product || count_product == null || !id_category) {
+                return next(ApiError.badRequest('Не все обязательные поля заполнены'));
+            }
 
             if (!url_main_image_product) {
                 return next(ApiError.badRequest("Main image file is missing"));
             }
 
             let filename = uuid.v4() + '.jpg'
+            logger.debug(`Сохранение основного изображения: ${filename}`);
             await url_main_image_product.mv(path.resolve(__dirname, '..', 'static', filename))
 
-            const product = await Product.create({article_product, name_product, price_product,
-                url_main_image_product: filename, description_product, count_product, is_enabled, id_category})
+            const product = await Product.create({
+                article_product,
+                name_product,
+                price_product,
+                url_main_image_product: filename,
+                description_product,
+                count_product,
+                is_enabled,
+                id_category
+            }, { transaction: t })
+
+            logger.debug('Продукт успешно создан:', product);
 
             if (specifications) {
                 specifications = JSON.parse(specifications);
                 for (const spec of specifications) {
-                    const {value_specification, id_attribute} = spec;
+                    const { value_specification, id_attribute } = spec;
                     await Specification.create({
-                        value_specification: spec.value_specification,
+                        value_specification,
                         id_product: product.id_product,
-                        id_attribute,
-                    })
+                        id_attribute
+                    }, { transaction: t });
+                    logger.debug('Создана характеристика:', spec);
                 }
             }
+
+            if (additional_images && additional_images.length) {
+                if (!Array.isArray(additional_images)) {
+                    logger.error('2024-05-04 17:30:40:3040 error: Дополнительные изображения не являются массивом');
+                    return next(ApiError.badRequest('Additional images are not an array'));
+                }
+                if (additional_images.some(image => !image)) {
+                    logger.error('2024-05-04 17:30:40:3040 error: Одно из дополнительных изображений отсутствует');
+                    return next(ApiError.badRequest('One of the additional images is missing'));
+                }
+                logger.debug('Обработка дополнительных изображений:', additional_images.map(image => image.name));
+                for (const image of additional_images) {
+                    if (!image.mimetype.startsWith('image/')) {
+                        logger.error(`2024-05-04 17:30:40:3040 error: Файл ${image.name} не является изображением`);
+                        continue; // Пропустить этот файл и перейти к следующему
+                    }
+                    let imageFilename = uuid.v4() + path.extname(image.name);
+                    logger.debug(`2024-05-04 17:30:40:3040 debug: Сохранение дополнительного изображения с именем файла: ${imageFilename}`);
+                    await image.mv(path.resolve(__dirname, '..', 'static', imageFilename))
+                    await Product_image.create({
+                        url_image: imageFilename,
+                        id_product: product.id_product
+                    }, { transaction: t });
+                    logger.debug('2024-05-04 17:30:40:3040 debug: Дополнительное изображение сохранено:', imageFilename);
+                }
+            }
+            await t.commit();
+            logger.debug('Транзакция завершена успешно');
             return res.json(product)
         } catch (e) {
+            await t.rollback();
+            logger.error('Ошибка при создании продукта:', e.message);
             next(ApiError.badRequest(e.message))
         }
     }
@@ -50,103 +106,19 @@ class ProductController {
             }
 
             const products = await Product.findAll({
-                attributes: { exclude: ['id_product'] },
                 where: {
                     [Op.or]: [
-                        { name_product: { [Op.like]: `%${String(keyword)}%` } },
-                        { article_product: { [Op.like]: `%${String(keyword)}%` } },
-                        { description_product: { [Op.like]: `%${String(keyword)}%` } },
+                        { name_product: { [Op.iLike]: `%${String(keyword)}%` } },
+                        { article_product: { [Op.iLike]: `%${String(keyword)}%` } },
+                        { description_product: { [Op.iLike]: `%${String(keyword)}%` } },
                     ]
                 },
 
             });
+
             return res.json(products);
         } catch (e) {
             logger.error(e);
-            next(ApiError.badRequest(e.message));
-        }
-    }
-// include: [
-    //     // Добавляем связи с другими таблицами
-    //     {
-    //         model: Category,
-    //         attributes: { exclude: ['id_category'] }, // исключаем атрибут id_category
-    //         where: {
-    //             name_category: { [Op.like]: `%${keyword}%` }
-    //         }
-    //     },
-    //     {
-    //         model: Specification,
-    //         attributes: { exclude: ['id_specification'] }, // исключаем атрибут id_specification
-    //         include: [
-    //             {
-    //                 model: Attribute,
-    //                 attributes: { exclude: ['id_attribute'] }, // исключаем атрибут id_attribute
-    //                 as: 'attribute', // Указываем алиас
-    //                 include: {
-    //                     model: Attribute_group,
-    //                     attributes: { exclude: ['id_attribute_group'] }, // исключаем атрибут id_attribute_group
-    //                     where: {
-    //                         name_attribute_group: { [Op.like]: `%${keyword}%` }
-    //                     }
-    //                 }
-    //             }
-    //         ],
-    //         as: 'specifications' // Указываем алиас
-    //     }
-    // ]
-
-    async exportToExcel(req, res, next) {
-        try {
-            // Подготавливаем данные для экспорта
-            const products = await Product.findAll({
-                // Включаем связанные данные, если они необходимы в вашем Excel файле
-                include: [
-                    {
-                        model: Specification,
-                        as: 'specifications',
-                        include: [{
-                            model: Attribute,
-                            as: 'attribute'
-                        }]
-                    }
-                ]
-            });
-
-            // Создаем экземпляр рабочей книги и листа
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Products');
-
-            // Добавляем заголовки столбцов
-            worksheet.columns = [
-                { header: 'ID', key: 'id_product', width: 10 },
-                { header: 'Article', key: 'article_product', width: 20 },
-                { header: 'Name', key: 'name_product', width: 30 },
-                { header: 'Price', key: 'price_product', width: 15 },
-                { header: 'Description', key: 'description_product', width: 50 },
-                { header: 'Count', key: 'count_product', width: 10 },
-                { header: 'Enabled', key: 'is_enabled', width: 10 },
-                // Добавляйте другие столбцы в соответствии с вашими данными
-            ];
-
-            // Добавляем строки с данными
-            products.forEach(product => {
-                worksheet.addRow(product.dataValues);
-            });
-
-            // Устанавливаем стили, если необходимо
-            worksheet.getRow(1).font = { bold: true };
-
-            // Подготавливаем файл для отправки
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'attachment; filename=' + 'products.xlsx');
-
-            // Записываем Excel файл в ответ
-            await workbook.xlsx.write(res);
-
-            // Завершаем ответ
-            res.end();
-        } catch (e) {
             next(ApiError.badRequest(e.message));
         }
     }
@@ -158,7 +130,7 @@ class ProductController {
 
             // Устанавливаем значения по умолчанию для страницы и лимита, если они не были предоставлены
             const pageValue = page || 1; // Значение по умолчанию для страницы
-            const limitValue = limit || 9; // Значение по умолчанию для лимита
+            const limitValue = limit || 5; // Значение по умолчанию для лимита
             const offsetValue = (pageValue - 1) * limitValue; // Вычисляем смещение для пагинации
 
             let whereConditions = []; // Массив для хранения условий SQL
@@ -215,15 +187,15 @@ class ProductController {
                 SELECT p.*, 
                 ARRAY_AGG(DISTINCT a.name_attribute) as attributes,
                 ARRAY_AGG(DISTINCT ag.name_attribute_group) as attribute_groups,
-                ARRAY_AGG(DISTINCT s.value_specification) as specifications
+                ARRAY_AGG(DISTINCT s.value_specification) as specifications,
+                ARRAY_AGG(DISTINCT pi.url_image) as images
                 FROM products p
                 LEFT JOIN specifications s ON p.id_product = s.id_product
                 LEFT JOIN attributes a ON s.id_attribute = a.id_attribute
                 LEFT JOIN attribute_groups ag ON a.id_attribute_group = ag.id_attribute_group
+                LEFT JOIN product_images pi ON p.id_product = pi.id_product
                 ${whereClause}
                 GROUP BY p.id_product
-                LIMIT ${limitValue}
-                OFFSET ${offsetValue};
             `;
 
             const countResult = await sequelize.query(sqlCount, { type: QueryTypes.SELECT });
@@ -238,64 +210,6 @@ class ProductController {
             return res.status(500).json({ message: "Ошибка при получении списка товаров: " + e.message });
         }
     }
-    // async getAll(req, res) {
-    //     // Извлекаем параметры фильтрации из запроса
-    //     let { id_category, id_collection, price_min, price_max, rating_min, specifications, limit, page } = req.query;
-    //
-    //     console.log("Параметры запроса:", req.query); // Логирование полученных параметров
-    //
-    //     // Устанавливаем значения по умолчанию для страницы и лимита, если они не были предоставлены
-    //     page = page || 1;
-    //     limit = limit || 9;
-    //     let offset = page * limit - limit; // Вычисляем смещение для пагинации
-    //
-    //     let filters = {}; // Объект для фильтрации товаров по данной категории, цене и рейтингу
-    //     let searchQuery = {}
-    //
-    //     // Обрабатываем фильтр по категории
-    //     if (id_category) {
-    //         filters.id_category = id_category; // Добавляем фильтр по id категории
-    //     }
-    //     if (id_collection) {
-    //         filters.id_collection = id_collection; // Добавляем фильтр по id категории
-    //     }
-    //     // Обрабатываем фильтры по ценовому диапазону
-    //     if (price_min || price_max) {
-    //         filters.price_product = {};
-    //         if (price_min) filters.price_product[Op.gte] = price_min; // Добавляем минимальную цену
-    //         if (price_max) filters.price_product[Op.lte] = price_max; // Добавляем максимальную цену
-    //     }
-    //     // Обрабатываем фильтр по минимальному рейтингу
-    //     if (rating_min) {
-    //         filters.rating = { [Op.gte]: rating_min }; // Добавляем фильтр по рейтингу
-    //     }
-    //
-    //
-    //     // Пытаемся получить список товаров, учитывая заданные фильтры
-    //     try {
-    //         let products = await Product.findAndCountAll({
-    //             where: {
-    //                 ...filters,
-    //                 // ...searchQuery
-    //             },
-    //             include: [{
-    //                 model: Specification,
-    //                 as: 'specifications',
-    //                 include: [{
-    //                     model: Attribute,
-    //                     as: 'attribute',
-    //                 }],
-    //             }],
-    //             limit, // Ограничение количества товаров в ответе
-    //             offset, // Смещение для пагинации
-    //             distinct: true // Это нужно для корректного подсчёта общего количества товаров
-    //         });
-    //
-    //         return res.json(products);
-    //     } catch (e) {
-    //         return res.status(500).json({ message: "Ошибка при получении списка товаров: " + e.message });
-    //     }
-    // }
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
@@ -313,7 +227,10 @@ class ProductController {
                                     model: Attribute_group,
                                     as: 'attribute_group',
                                 }]
-                            }]
+                            }],
+                        },
+                        {
+                            model: Product_image, // Модель изображения продукта
                         }
                     ]
                 },
@@ -327,25 +244,50 @@ class ProductController {
         }
     }
 
+    async getProductData(id) {
+        const product = await Product.findByPk(id)
+
+        if (!product) {
+            throw new Error(`Product with id ${id} not found`);
+        }
+        return product;
+    }
+
     async update(req, res, next) {
+        // const t = await sequelize.transaction();
         try {
             const {id} = req.params
-            const {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category} = req.body
-            const {url_main_image_product} = req.files || {}
+            let {article_product, name_product, price_product, description_product, count_product, is_enabled, id_category, id_collection } = req.body
+            let {url_main_image_product} = req.files || {}
 
             const product = await Product.findByPk(id)
+            logger.debug("Found product for update:", product);
 
             if(!product) {
                 return next(ApiError.badRequest({message: `Product with id ${id} not found`}))
             }
 
-            let filename = product.url_main_image_product; 
-            if (url_main_image_product) { 
-                filename = uuid.v4() + '.jpg' 
-                await url_main_image_product.mv(path.resolve(__dirname, '..', 'static', filename)) 
-            } 
+            // Обновление основного изображения если оно есть
+            if (url_main_image_product) {
+                const filename = uuid.v4() + '.jpg'
+                await url_main_image_product.mv(path.resolve(__dirname, '..', 'static', filename));
+                product.url_main_image_product = filename;
+            }
 
-            await product.update({article_product, name_product, price_product, url_main_image_product: filename, description_product, count_product, is_enabled, id_category})
+            await product.update({
+                article_product,
+                name_product,
+                price_product,
+                description_product,
+                count_product,
+                is_enabled,
+                id_category,
+                id_collection,
+                url_main_image_product: product.url_main_image_product,
+            });
+
+            logger.debug("Product after update:", product);
+
             return res.json(product)
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -366,8 +308,6 @@ class ProductController {
             next(ApiError.badRequest(e.message))
         }
     }
-
-
 }
 
 module.exports = new ProductController()

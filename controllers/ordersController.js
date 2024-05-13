@@ -1,8 +1,11 @@
-const {Order_address, Orders, Order_product, Cart, Cart_product, Payment_method} = require("../models/association");
+const {Order_address, Orders, Order_product, Cart, Cart_product, Payment_method, Product, Order_delivery, Order_status} = require("../models/association");
 const sequelize  = require('../db')
 const ApiError = require("../error/ApiError");
 const {sendOrderDetailsEmail } = require('../utils/mailer')
 const logger = require("../utils/logger");
+const excel = require('exceljs')
+const fs = require('fs')
+
 class OrdersController {
     async create(req, res, next) {
         const t = await sequelize.transaction();
@@ -33,6 +36,20 @@ class OrdersController {
                     id_order: createdOrder.id_order,
                     id_product: cartProduct.id_product
                 }, { transaction: t });
+
+                const productToUpdate = await Product.findByPk(cartProduct.id_product);
+
+                if (productToUpdate) {
+                    productToUpdate.count_product -= product.count_order_product
+                    // Проверка на отрицательное значение
+                    if (productToUpdate.count_product < 0) {
+                        throw new Error(`Not enough product in stock for ${productToUpdate.name_product}`);
+                    }
+                    // Сохраняем обновленные данные продукта
+                    await productToUpdate.save({transaction: t});
+                } else {
+                    throw new Error(`Product with id ${cartProduct.id_product} not found`);
+                }
             }
 
             // Очистка корзины после создания заказа
@@ -69,7 +86,6 @@ class OrdersController {
             next(ApiError.badRequest(e.message));
         }
     }
-
 
     async getAll(req, res) {
         const { email_user } = req.query;
@@ -112,7 +128,37 @@ class OrdersController {
             next(ApiError.badRequest(e.message));
         }
     }
+    async getOrderData(id) {
+        const order = await Orders.findByPk(id, {
+            include: [
+                {
+                    model: Order_address,
+                    as: 'order_address'
+                },
+                {
+                    model: Order_product,
+                    as: 'order_product'
+                },
+                {
+                    model: Payment_method,
+                    as: 'payment_method'
+                },
+                {
+                    model: Order_status,
+                    as: 'order_status'
+                },
+                {
+                    model: Order_delivery,
+                    as: 'order_delivery'
+                }
+            ]
+        });
 
+        if (!order) {
+            throw new Error(`Order with id ${id} not found`);
+        }
+        return order;
+    }
     async update(req, res, next) {
         const { id } = req.params; // ID заказа для обновления
         const { order, address, products, id_payment_method, id_order_delivery, id_order_status } = req.body; // Расширьте данные для обновления
@@ -123,8 +169,14 @@ class OrdersController {
             const foundOrder = await Orders.findByPk(id, { transaction: t });
             if (!foundOrder) throw new Error(`Order with ID ${id} not found`);
 
-            await foundOrder.update({ ...order, id_payment_method, id_order_delivery, id_order_status }, { transaction: t });
-            // logger.debug(JSON.stringify(...order, null, 2))
+            await foundOrder.update({
+                ...order,
+                id_payment_method: id_payment_method,
+                id_order_delivery: id_order_delivery,
+                id_order_status: id_order_status
+            }, { transaction: t });
+
+            // Получаем обновленный заказ
             const updatedOrder = await Orders.findByPk(id, { transaction: t });
             if (!updatedOrder) throw new Error('Error fetching updated order');
 
@@ -132,7 +184,6 @@ class OrdersController {
             if (address && address.id_order_address) {
                 const foundAddress = await Order_address.findByPk(address.id_order_address, { transaction: t });
                 if (!foundAddress) throw new Error(`Order address with ID ${address.id_order_address} not found`);
-
                 await foundAddress.update(address, { transaction: t });
             }
 
@@ -143,6 +194,7 @@ class OrdersController {
                     if (!foundProduct) throw new Error(`Order product with ID ${product.id_order_product} not found`);
 
                     await foundProduct.update(product, { transaction: t });
+                    logger.debug("Updated product data:", product); // Добавлено: логирование обновленных данных продукта
                 }
             }
 

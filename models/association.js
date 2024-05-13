@@ -19,7 +19,6 @@ const Product = require('./product_model')
 const Specification = require('./specification_model')
 const User_profile = require('./user_profile_model')
 const Payment_method = require('./payment_method_model')
-const Confirmation_code = require('./confirmation_code_model')
 
 //attribute
 Attribute_group.hasMany(Attribute, { foreignKey: 'id_attribute_group' });
@@ -127,5 +126,4 @@ module.exports = {
     Order_product,
     Order_delivery,
     Order_status,
-    Confirmation_code
 }

@@ -23,8 +23,14 @@
         }
     ],
     "payment_method": {
-    "id_payment_method": 1
-    }
+        "id_payment_method": 1
+    },
+    "order_delivery": {
+        "id_order_delivery": 1
+    },
+    "order_status": {
+        "id_order_status": 1
+    },
 }
 
 OrderHistory 

@@ -48,8 +48,12 @@ const Product = sequelize.define('product', {
     is_enabled: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false,
+        defaultValue: true,
     },
 })
+
+Product.beforeSave((product, options) => {
+    product.is_enabled = product.count_product > 0;
+});
 
 module.exports = Product;

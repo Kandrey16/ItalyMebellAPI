@@ -1447,6 +1447,30 @@
         }
       }
     },
+    "/orders/{id}/export": {
+      "get": {
+        "description": "",
+        "produces": [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/payment_method/": {
       "post": {
         "description": "",
@@ -1675,97 +1699,111 @@
     },
     "/product_image/": {
       "post": {
-        "description": "",
+        "description": "Create a new product image with an image file and id_product",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id_product": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "id_product",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Product identifier"
+          },
+          {
+            "name": "url_image",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "description": "The image file to upload"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image created successfully"
           }
         }
       },
       "get": {
-        "description": "",
+        "description": "Retrieve all product images or images for a specific product by id_product",
+        "parameters": [
+          {
+            "name": "id_product",
+            "in": "query",
+            "type": "string",
+            "description": "Optional product identifier to filter images"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of product images or filtered images by product"
           }
         }
       }
     },
     "/product_image/{id}": {
       "get": {
-        "description": "",
+        "description": "Retrieve a specific product image by its unique ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A specific product image"
           }
         }
       },
       "put": {
-        "description": "",
+        "description": "Update an existing product image by its ID with a new image",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "url_image": {
-                  "example": "any"
-                },
-                "id_product": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "id_product",
+            "in": "formData",
+            "required": false,
+            "type": "string",
+            "description": "Product identifier (if it needs to be updated)"
+          },
+          {
+            "name": "url_image",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "description": "The new image file to upload"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image updated successfully"
           }
         }
       },
       "delete": {
-        "description": "",
+        "description": "Delete a specific product image by its unique ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the product image"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Product image deleted successfully"
           }
         }
       }

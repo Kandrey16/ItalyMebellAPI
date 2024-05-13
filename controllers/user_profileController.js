@@ -1,11 +1,12 @@
 const ApiError = require('../error/ApiError')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {User_profile, Confirmation_code} = require('../models/association')
+const {User_profile} = require('../models/association')
 const uuid = require("uuid");
 const path = require("path");
 const {sendConfirmationCodeEmail} = require("../utils/mailer");
-const {logger} = require("../utils/logger");
+const logger = require('../utils/logger')
+const confirmationCodes = {};
 
 const generateJwt = (email_user, role_user) => {
     return jwt.sign(
@@ -54,8 +55,6 @@ class User_profileController {
 
             const token = generateJwt(
                 user.email_user,
-                user.first_name_user,
-                user.second_name_user,
                 user.role_user,
             )
             return res.json({token})
@@ -158,7 +157,61 @@ class User_profileController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async resetPassword(req, res, next) {
+        try {
+            const { email_user, code, new_password, confirm_password } = req.body;
 
+            // Получение пользователя по email
+            const user = await User_profile.findOne({ where: { email_user } });
+
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            // Проверка верности кода подтверждения
+            if (code !== confirmationCodes[email_user]) {
+                return next(ApiError.badRequest('Неверный код подтверждения'));
+            }
+
+            // Проверка совпадения нового пароля и его подтверждения
+            if (new_password !== confirm_password) {
+                return next(ApiError.badRequest('Новый пароль и его подтверждение не совпадают'));
+            }
+
+            // Хеширование нового пароля
+            const hashPassword = await bcrypt.hash(new_password, 5);
+
+            // Обновление пароля пользователя
+            await user.update({ password_user: hashPassword });
+
+            // Очистка кода подтверждения
+            delete confirmationCodes[email_user];
+
+            return res.json({ message: 'Пароль успешно изменен' });
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    // Отправка кода подтверждефния на почту
+    async sendResetPasswordCode(req, res, next) {
+        try {
+            const { email_user } = req.body;
+            logger.debug('Получен запрос на отправку кода подтверждения для:', email_user);
+            // Генерация случайного кода подтверждения
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            // Отправка кода подтверждения на почту
+            await sendConfirmationCodeEmail(email_user, code);
+            logger.debug('Код подтверждения отправлен на почту:', email_user);
+            // Сохранение кода подтверждения в объекте
+            confirmationCodes[email_user] = code;
+
+            return res.json({ message: 'Код подтверждения отправлен на почту' });
+        } catch (e) {
+            logger.debug('Ошибка при обработке запроса на отправку кода:', e);
+            next(ApiError.badRequest(e.message))
+        }
+    }
 }
 
 module.exports = new User_profileController()

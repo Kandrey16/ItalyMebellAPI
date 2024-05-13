@@ -11,8 +11,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-logger.debug('Проверьте, что параметры аутентификации указаны правильно'); // Отладка конфигурации
-
 const sendOrderDetailsEmail = async (email, orderDetails) => {
     try {
         logger.debug(`Начинается отправка сообщения на адрес: ${email}`); // Отладка вызова функции
@@ -51,7 +49,7 @@ const sendOrderDetailsEmail = async (email, orderDetails) => {
                     <div class="product-info">
                       <h1>Информация о вашем заказе №${orderDetails.order.number_order}</h1>
                       ${orderDetails.products.map(product => `
-                        <p>Продукт: ${product.name_product}, Количество: ${product.count_order_product}</p>
+                        <p>Продукт: ${product}, Количество: ${product.count_order_product}</p>
                       `).join('')}
                       <p>Общая сумма заказа: ${orderDetails.order.price_order} руб.</p>
                       <p>Адрес доставки: ${orderDetails.address.address_order}</p>
@@ -99,7 +97,32 @@ const sendConfirmationCodeEmail = async(email_user, code) => {
     }
 }
 
+const sendResetPasswordCode = async (email) => {
+    if (!email) {
+        throw new Error('Email is required');
+    }
+    // Генерация временного кода для сброса пароля
+    const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+    await sendConfirmationCodeEmail(email, resetCode);
+    return resetCode; // Возвращаем код для последующей проверки
+};
+
+const checkResetCodeAndChangePassword = async (email, enteredCode, newPassword, correctCode) => {
+    if (!email || !enteredCode || !newPassword) {
+        throw new Error('Email, code and new password are required');
+    }
+    if (enteredCode !== correctCode) {
+        throw new Error('Invalid reset code');
+    }
+
+    // Место для вашей логики изменения пароля пользователя
+    // Например, User.changePassword(email, newPassword);
+
+    return true; // Возвращаем подтверждение успешной смены пароля
+};
+
 module.exports = {
     sendOrderDetailsEmail,
-    sendConfirmationCodeEmail
+    sendResetPasswordCode,
+    sendConfirmationCodeEmail,
 };
